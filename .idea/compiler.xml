@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <option name="DEFAULT_COMPILER" value="Javac" />
+    <resourceExtensions />
+    <wildcardResourcePatterns>
+      <entry name="!?*.java" />
+      <entry name="!?*.class" />
+    </wildcardResourcePatterns>
+    <bytecodeTargetLevel>
+      <module name="AircraftWar-base" target="11" />
+    </bytecodeTargetLevel>
+    <additionalJavacArguments encoding="utf-8">
+      <arg value="-encoding" />
+      <arg value="utf-8" />
+    </additionalJavacArguments>
+  </component>
+</project>

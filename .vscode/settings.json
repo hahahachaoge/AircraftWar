@@ -1,0 +1,11 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "java.project.outputPath": "out",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "files.encoding": "UTF-8",
+    "java.configuration.runtimes": [],
+    "java.compile.nullAnalysis.mode": "automatic"
+}

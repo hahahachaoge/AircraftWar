@@ -1,0 +1,50 @@
+@startuml "数据访问模式DAO：飞机大战排行榜"
+title 数据访问模式DAO：飞机大战排行榜
+left to right direction
+
+enum Difficulty{
+    BEGINNER
+    BASIC
+    INTERMEDIATE
+    ADVANCED
+    EXPERT
+}
+
+class PlayRecord{
+
+}
+PlayRecord --> Difficulty : -difficulty
+
+PlayRecord ..> PlayRecordDao
+
+interface PlayRecordDao{
+
+}
+
+class PlayRecordDaoImpl{
+
+}
+
+' 实现关系：具体DAO实现接口
+PlayRecordDao <|.. PlayRecordDaoImpl
+
+class RankingBoard {
+
+}
+
+' 组合关系：客户端持有DAO接口的引用
+RankingBoard o--> PlayRecordDao
+
+
+' 注释说明DAO模式结构
+note as DAONote
+  <b>DAO模式核心结构：</b>
+  1. PlayRecord: 数据模型
+  2. PlayRecordDao: 抽象接口
+  3. PlayRecordDaoImpl: 具体实现
+  4. RankingBoard: 客户端，依赖于抽象(PlayRecordeDao)
+  符合“面向接口编程”和“依赖倒置”原则
+end note
+PlayRecordDao .. DAONote
+
+@enduml

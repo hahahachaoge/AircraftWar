@@ -1,0 +1,63 @@
+@startuml "飞机大战弹道系统 - 策略模式实现"
+title 飞机大战弹道系统 - 策略模式实现
+left to right direction
+
+' 1. 策略接口
+interface ShootStrategy {
+  +{abstract} shoot(int shooterX, int shooterY,int speedY ,int direction, int power): List<BaseBullet>
+} 
+
+' 2. 具体策略类
+class StraightShoot {
+  -bulletNum: int = 3
+  +StraightShoot(int bulletNum)
+  +shoot(int shooterX, int shooterY, int speedY, int direction, int power: List<BaseBullet>
+  --
+  直射策略
+  通过bulletNum控制子弹数量
+  实现单排/双排直射 
+}
+
+class ScatterShoot {
+  -bulletNum: int = 3
+  +ScatterShoot(int bulletNum)
+  +shoot(int shooterX, int shooterY, int speedY, int direction, int power): List<BaseBullet>
+  --
+  散射策略
+  默认3发扇形散射
+  可配置子弹数量
+}
+
+class RingShoot {
+  -bulletNum: int = 20
+  +RingShoot(int bulletNum)
+  +shoot(int shooterX, int shooterY, int speedY, int direction, int power): List<BaseBullet>
+  --
+  环射策略
+  默认20发环形散射
+  可配置子弹数量
+}
+
+' 3. 实现关系
+ShootStrategy <|.. StraightShoot
+ShootStrategy <|.. ScatterShoot
+ShootStrategy <|.. RingShoot
+
+
+' 5. 上下文类
+class AbstractAircraft {
+  #maxHp: int
+  #hp: int
+  #shootStrategy: ShootStrategy
+  #direction: int
+  #power: int
+  
+  +setShootStrategy(strategy: ShootStrategy): void
+  +shoot(): List<BaseBullet>
+  ' ... 其他上下文方法
+}
+
+AbstractAircraft o--> ShootStrategy : -shootStrategy
+
+
+@enduml
