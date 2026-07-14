@@ -70,9 +70,7 @@
 
 | JAR 包 | 位置 | 用途 |
 |--------|------|------|
-| `commons-lang3-3.8.1.jar` | `lib/commons-lang3-3.8.1.jar` | Apache Commons Lang 工具库 |
-
-> **注意**: 该 JAR 在源码中目前并无显式 import 使用，可能是预留依赖。如果不影响编译可以移除，或保留以兼容项目配置。
+无额外第三方 JAR 依赖，项目使用纯 JDK 标准库。
 
 ### 2.3 文件清单
 
@@ -124,7 +122,7 @@
 ```
 AircraftWar-main/
 ├── src/                              # 📂 源代码根目录
-│   └── edu/hitsz/
+│   └── cn/edu/scnu/
 │       ├── aircraft/                 # ✈️ 飞机类体系
 │       │   ├── AbstractAircraft.java #   飞机抽象基类
 │       │   ├── HeroAircraft.java     #   英雄机（单例模式）
@@ -191,8 +189,6 @@ AircraftWar-main/
 │           └── MusicThread.java      #   音频播放线程
 │
 ├── images/                           # 🖼️ 图片资源（副本，编译时复制）
-├── lib/                              # 📚 第三方依赖
-│   └── commons-lang3-3.8.1.jar
 ├── data/rank/                        # 💾 排行榜数据存储
 │   ├── rank_beginner.dat
 │   └── rank_basic.dat
@@ -210,18 +206,17 @@ AircraftWar-main/
 
 1. **打开项目**：File → Open → 选择项目根目录 `AircraftWar-main`
 2. **配置 JDK**：File → Project Structure → Project SDK → 选择 JDK 11+
-3. **添加依赖**：File → Project Structure → Modules → Dependencies → 添加 `lib/commons-lang3-3.8.1.jar`
-4. **运行主类**：找到 `src/edu/hitsz/application/Main.java`，右键 → Run `Main.main()`
+3. **运行主类**：找到 `src/cn/edu/scnu/application/Main.java`，右键 → Run `Main.main()`
 
 ### 4.2 方式二：命令行编译运行
 
+建议使用项目根目录的 `run.bat` 脚本一键编译运行（自动处理 UTF-8 编码）。
+
+也可手动执行：
+
 ```bash
 # 1️⃣ 编译所有 Java 源文件
-# Windows
-javac -cp "lib/commons-lang3-3.8.1.jar;src" -d out -sourcepath src src/edu/hitsz/application/Main.java
-
-# macOS / Linux
-javac -cp "lib/commons-lang3-3.8.1.jar:src" -d out -sourcepath src src/edu/hitsz/application/Main.java
+javac -encoding UTF-8 -d out -sourcepath src src/cn/edu/scnu/application/Main.java
 
 # 2️⃣ 将图片资源复制到输出目录
 # Windows
@@ -234,10 +229,10 @@ cp -r src/videos out/videos
 
 # 3️⃣ 运行游戏
 # Windows
-java -cp "lib/commons-lang3-3.8.1.jar;out" edu.hitsz.application.Main
+java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
 
 # macOS / Linux
-java -cp "lib/commons-lang3-3.8.1.jar:out" edu.hitsz.application.Main
+java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
 ```
 
 ### 4.3 方式三：使用 VS Code
@@ -809,7 +804,7 @@ BufferedImage img = ImageManager.get(someObject);
 
 **排查步骤**：
 1. 确认 JDK 版本 ≥ 11
-2. 确认 `lib/commons-lang3-3.8.1.jar` 已添加到项目依赖
+2. 如果编译报错，检查源码编码是否为 UTF-8
 3. 确认 `src/images/` 目录下有图片文件
 4. 如果是通过命令行运行，确保资源文件已复制到输出目录
 
@@ -844,7 +839,7 @@ BufferedImage img = ImageManager.get(someObject);
 
 **解决步骤**：
 1. File → Project Structure → Project → SDK → 选择 JDK 11+
-2. File → Project Structure → Modules → Dependencies → 添加 `lib/commons-lang3-3.8.1.jar`（作用域设为 Compile）
+2. File → Project Structure → Modules → Dependencies → 确保无未解析的依赖
 3. 如果源码编码乱码，检查 File → Settings → File Encodings → 设置为 UTF-8
 
 ### 14.6 如何调整游戏难度参数？
@@ -875,17 +870,17 @@ this.enemySpawnCycle = 10; // 数值越小，敌机生成越快
 
 | 包路径 | 职责 |
 |--------|------|
-| `edu.hitsz.aircraft` | 飞机类（英雄机 + 所有敌机 + 工厂） |
-| `edu.hitsz.application` | 应用入口、主菜单、图片管理、排行榜窗口 |
-| `edu.hitsz.application.game` | 各难度游戏逻辑实现 |
-| `edu.hitsz.basic` | 飞行对象基类（坐标/碰撞/图片懒加载） |
-| `edu.hitsz.bullet` | 子弹类 |
-| `edu.hitsz.shoot` | 射击策略（策略模式） |
-| `edu.hitsz.prop` | 道具基类/工厂/观察者 |
-| `edu.hitsz.prop.supply` | 5 种具体道具实现 |
-| `edu.hitsz.prop.observer` | 观察者接口与管理器 |
-| `edu.hitsz.rank` | 排行榜数据层 |
-| `edu.hitsz.music` | 音频播放管理 |
+| `cn.edu.scnu.aircraft` | 飞机类（英雄机 + 所有敌机 + 工厂） |
+| `cn.edu.scnu.application` | 应用入口、主菜单、图片管理、排行榜窗口 |
+| `cn.edu.scnu.application.game` | 各难度游戏逻辑实现 |
+| `cn.edu.scnu.basic` | 飞行对象基类（坐标/碰撞/图片懒加载） |
+| `cn.edu.scnu.bullet` | 子弹类 |
+| `cn.edu.scnu.shoot` | 射击策略（策略模式） |
+| `cn.edu.scnu.prop` | 道具基类/工厂/观察者 |
+| `cn.edu.scnu.prop.supply` | 5 种具体道具实现 |
+| `cn.edu.scnu.prop.observer` | 观察者接口与管理器 |
+| `cn.edu.scnu.rank` | 排行榜数据层 |
+| `cn.edu.scnu.music` | 音频播放管理 |
 
 ### C. 版本信息
 
@@ -894,7 +889,7 @@ this.enemySpawnCycle = 10; // 数值越小，敌机生成越快
 | 项目版本 | v1.0 |
 | JDK | 11+ |
 | 最后更新 | 2026-07-14 |
-| 作者 | HITSZ |
+| 作者 | 黄彪骐 |
 
 ---
 
