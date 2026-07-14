@@ -230,10 +230,12 @@ public abstract class AbstractGame extends JPanel {
                 System.out.println(String.format("距离BOSS敌机登场 还差 %d 分 !!!", scoreThreshold - score));
             }
 
-            double levelUpTime = (double) (difficultyLevelUpInterval - gameTime % difficultyLevelUpInterval)
-                    * timeInterval / 1000;
-            if (levelUpTime < 5) {
-                System.out.println(String.format("距离游戏难度提升 还有 %.2f 秒", levelUpTime));
+            if (difficultyLevelUpInterval != 0) {
+                double levelUpTime = (double) (difficultyLevelUpInterval - gameTime % difficultyLevelUpInterval)
+                        * timeInterval / 1000;
+                if (levelUpTime < 5) {
+                    System.out.println(String.format("距离游戏难度提升 还有 %.2f 秒", levelUpTime));
+                }
             }
         }
     }
