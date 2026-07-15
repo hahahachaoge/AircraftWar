@@ -121,6 +121,11 @@ public abstract class AbstractGame extends JPanel {
     private int screenShakeIntensity = 0;
     private int shakeCounter = 0;
 
+    // Boss 警告相关
+    protected boolean bossWarningActive = false;
+    protected int bossWarningTimer = 0;
+    protected static final int BOSS_WARNING_DELAY = 60;   // 60帧 × 50ms = 3秒
+
     public void addExplosion(int x, int y) {
         explosions.add(new int[]{x, y, 0, 1});
     }
@@ -299,8 +304,20 @@ public abstract class AbstractGame extends JPanel {
 
                 createRandomEnemy();
 
+                // Boss 警告 & 生成控制
                 if (shouldSpawnBoss()) {
-                    spawnBossEnemy();
+                    if (!bossWarningActive) {
+                        bossWarningActive = true;
+                        bossWarningTimer = 0;
+                    }
+                }
+                // 如果警告激活，计时并在延迟后生成
+                if (bossWarningActive) {
+                    bossWarningTimer++;
+                    if (bossWarningTimer >= BOSS_WARNING_DELAY) {
+                        spawnBossEnemy();
+                        bossWarningActive = false;   // 生成后关闭警告
+                    }
                 }
 
                 // 飞机发射子弹
@@ -799,6 +816,32 @@ public abstract class AbstractGame extends JPanel {
 
         // 绘制得分和生命值
         paintScoreAndLife(shakeG);
+
+        // ★ 绘制 BOSS 警告（在暂停菜单之前）
+        if (bossWarningActive) {
+            String warningText = "WARNING !!";
+            shakeG.setFont(new Font("SansSerif", Font.BOLD, 60));
+            FontMetrics fm = shakeG.getFontMetrics();
+            int x = (Main.WINDOW_WIDTH - fm.stringWidth(warningText)) / 2;
+            int y = Main.WINDOW_HEIGHT / 2 - 30;
+
+            // 闪烁效果：每 10 帧切换颜色
+            if (gameTime % 20 < 10) {
+                shakeG.setColor(Color.RED);
+            } else {
+                shakeG.setColor(Color.ORANGE);
+            }
+            shakeG.drawString(warningText, x, y);
+
+            // 显示倒计时（秒）
+            int remain = (BOSS_WARNING_DELAY - bossWarningTimer) * 50 / 1000; // 毫秒转秒
+            String countDown = String.valueOf(remain + 1);
+            shakeG.setFont(new Font("SansSerif", Font.BOLD, 40));
+            shakeG.setColor(Color.WHITE);
+            fm = shakeG.getFontMetrics();
+            x = (Main.WINDOW_WIDTH - fm.stringWidth(countDown)) / 2;
+            shakeG.drawString(countDown, x, y + 70);
+        }
 
         // 暂停时绘制半透明遮罩和菜单
         if (paused && !gameOverFlag) {

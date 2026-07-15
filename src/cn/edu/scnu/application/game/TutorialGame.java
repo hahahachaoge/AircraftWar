@@ -103,7 +103,6 @@ public class TutorialGame extends AbstractGame {
 
     @Override
     protected void triggerProp(AbstractAircraft enemyAircraft) {
-        if (enemyAircraft.notValid()) return;
         if (!firstEnemyKilled) {
             firstEnemyKilled = true;
             int propX = Math.max(0, Math.min(Main.WINDOW_WIDTH, enemyAircraft.getLocationX()));
@@ -151,6 +150,32 @@ public class TutorialGame extends AbstractGame {
         g.setColor(Color.CYAN);
         g.setFont(new Font("SansSerif", Font.BOLD, 18));
         g.drawString("敌机击杀: " + enemyKillCount + " / " + requiredKills, 50, 500);
+
+        // 绘制 BOSS 警告
+        if (bossWarningActive) {
+            String warningText = "WARNING !!";
+            g.setFont(new Font("SansSerif", Font.BOLD, 60));
+            FontMetrics fm = g.getFontMetrics();
+            int x = (Main.WINDOW_WIDTH - fm.stringWidth(warningText)) / 2;
+            int y = Main.WINDOW_HEIGHT / 2 - 30;
+
+            // 闪烁效果：每 10 帧切换颜色
+            if (gameTime % 20 < 10) {
+                g.setColor(Color.RED);
+            } else {
+                g.setColor(Color.ORANGE);
+            }
+            g.drawString(warningText, x, y);
+
+            // 显示倒计时（秒）
+            int remain = (BOSS_WARNING_DELAY - bossWarningTimer) * 50 / 1000; // 毫秒转秒
+            String countDown = String.valueOf(remain + 1);
+            g.setFont(new Font("SansSerif", Font.BOLD, 40));
+            g.setColor(Color.WHITE);
+            fm = g.getFontMetrics();
+            x = (Main.WINDOW_WIDTH - fm.stringWidth(countDown)) / 2;
+            g.drawString(countDown, x, y + 70);
+        }
     }
 
     @Override
