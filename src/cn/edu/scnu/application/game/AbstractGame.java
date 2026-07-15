@@ -35,97 +35,236 @@ import java.util.List;
 import java.util.Timer;
 
 /**
+ * 游戏抽象基类，定义所有游戏模式（单人、双人、教程）的通用逻辑骨架。
+ * <p>
+ * 本类继承自 {@link JPanel}，作为游戏的主面板，负责：
+ * <ul>
+ *   <li>游戏主循环调度（定时任务驱动）</li>
+ *   <li>英雄机、敌机、子弹、道具等游戏对象的创建与管理</li>
+ *   <li>碰撞检测与游戏状态更新</li>
+ *   <li>画面绘制（背景滚动、爆炸动画、暂停菜单等）</li>
+ *   <li>音效播放与暂停/恢复控制</li>
+ * </ul>
+ * 子类需实现抽象方法以提供具体的游戏设置（难度参数、敌机生成策略等），
+ * 同时可通过重写钩子方法（如 {@link #setBossEnemyHp()}、{@link #difficultyLevelUp()}）定制特定行为。
+ *
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 @SuppressWarnings("all")
 public abstract class AbstractGame extends JPanel {
     /**
-     * ! 定义所有游戏子类都会用到的公共属性
+     * 背景图片纵向滚动的起始 Y 坐标
      */
     private int backGroundTop = 0;
 
-    // 调度器, 用于定时任务调度
+    /**
+     * 定时调度器，用于驱动游戏主循环
+     */
     protected Timer timer;
-    // 时间间隔(ms)，控制刷新频率
+    /**
+     * 时间间隔（毫秒），控制游戏刷新频率
+     */
     private final int timeInterval = 50;
+    /**
+     * 游戏运行总帧数，每帧递增
+     */
     protected long gameTime = 0;
+    /**
+     * 难度提升的时间间隔（帧数），0 表示不自动升级
+     */
     protected int difficultyLevelUpInterval = 0;
 
+    /**
+     * 当前存活的所有英雄机列表
+     */
     protected List<HeroAircraft> heroes;
+    /**
+     * 英雄机的初始生命值
+     */
     protected int initHeroHp = 200;
 
+    /**
+     * Boss 敌机的生命值
+     */
     protected int bossEnemyHp = 100;
 
-    protected final List<AbstractAircraft> enemyAircrafts; // 多态数组
+    /**
+     * 当前存活的敌机列表（多态存储）
+     */
+    protected final List<AbstractAircraft> enemyAircrafts;
+    /**
+     * 英雄机发射的子弹列表
+     */
     protected final List<BaseBullet> heroBullets;
+    /**
+     * 敌机发射的子弹列表
+     */
     protected final List<BaseBullet> enemyBullets;
+    /**
+     * 掉落道具列表
+     */
     protected final List<AbstractProp> props;
 
+    /**
+     * 敌机类型到工厂对象的映射
+     */
     protected final Map<EnemyType, EnemyFactory> enemyFactories = new EnumMap<>(EnemyType.class);
 
-    // 屏幕中出现的敌机最大数量
+    /**
+     * 屏幕中同时出现的敌机最大数量
+     */
     protected int enemyMaxNumber = 5;
 
-    // 敌机生成周期
+    /**
+     * 敌机生成周期（帧数）
+     */
     protected double enemySpawnCycle = 10;
+    /**
+     * 敌机生成计数器
+     */
     private int enemySpawnCounter = 0;
 
-    // 道具生成概率
+    /**
+     * 道具掉落概率
+     */
     protected double propRand;
 
-    // 英雄机和敌机射击周期
+    /**
+     * 英雄机射击周期（帧数）
+     */
     protected int heroShootCycle = 10;
+    /**
+     * 敌机射击周期（帧数）
+     */
     protected int enemyShootCycle = 10;
+    /**
+     * 敌机射击计数器
+     */
     private int enemyShootCounter = 0;
+    /**
+     * 英雄机射击计数器
+     */
     private int heroShootCounter = 0;
 
+    /**
+     * 敌机生命值倍率
+     */
     protected double enemyHpFactor = 1.0;
+    /**
+     * 敌机速度倍率
+     */
     protected double enemySpeedFactor = 1.0;
 
-    // 当前玩家信息
+    /**
+     * 当前玩家名称
+     */
     protected String playName;
+    /**
+     * 当前得分
+     */
     protected int score = 0;
+    /**
+     * 当前难度
+     */
     protected Difficulty difficulty;
 
+    /**
+     * 道具效果定时器（如火力的持续时间）
+     */
     private PropEffectTimer fireTimer;
 
-    // 游戏结束标志
+    /**
+     * 游戏是否已结束
+     */
     private boolean gameOverFlag = false;
 
-    // Boss机产生标志
+    /**
+     * Boss 敌机是否已生成
+     */
     protected boolean bossSpawned = false;
-    // Boss机产生的分数阈值器
+    /**
+     * Boss 敌机生成的分数阈值
+     */
     protected int scoreThreshold = 500;
-    // Boss机
+    /**
+     * Boss 敌机实例
+     */
     protected AbstractAircraft bossEnemy = null;
 
-    // 排行榜功能类
+    /**
+     * 游戏记录持久化对象
+     */
     PlayRecordDaoImpl playRecordDao = new PlayRecordDaoImpl(new ArrayList<>());
+    /**
+     * 排行榜面板
+     */
     RankingBoard rankingBoard = new RankingBoard(playRecordDao);
 
+    /**
+     * 音乐管理器实例
+     */
     protected MusicManager musicManager = MusicManager.getInstance();
 
+    /**
+     * 当前游戏模式
+     */
     protected GameMode gameMode;
+    /**
+     * 键盘控制器列表（用于双人模式中玩家1的键盘操控）
+     */
     protected List<KeyboardController> keyboardControllers = new ArrayList<>();
 
-    // 暂停相关
+    /**
+     * 暂停状态标志
+     */
     private boolean paused = false;
-    private Rectangle continueBtnRect, exitBtnRect;
+    /**
+     * 暂停菜单中"继续"按钮的矩形区域
+     */
+    private Rectangle continueBtnRect;
+    /**
+     * 暂停菜单中"退出"按钮的矩形区域
+     */
+    private Rectangle exitBtnRect;
+    /**
+     * 暂停菜单按钮的宽度和高度
+     */
     private static final int BTN_WIDTH = 120, BTN_HEIGHT = 40;
 
-    // 爆炸动画列表：每个元素为 {x, y, frame(0~7), speed(1=正常, 2=慢放)}
+    /**
+     * 爆炸动画列表，每个元素为 {x, y, frame(0~7), speed(1=正常, 2=慢放)}
+     */
     private final List<int[]> explosions = new ArrayList<>();
 
-    // 屏幕震动
+    /**
+     * 屏幕震动剩余帧数
+     */
     private int screenShakeTime = 0;
+    /**
+     * 屏幕震动强度
+     */
     private int screenShakeIntensity = 0;
+    /**
+     * 震动计数器
+     */
     private int shakeCounter = 0;
 
+    /**
+     * 添加一个爆炸动画效果。
+     *
+     * @param x 爆炸中心的 X 坐标
+     * @param y 爆炸中心的 Y 坐标
+     */
     public void addExplosion(int x, int y) {
         explosions.add(new int[]{x, y, 0, 1});
     }
 
-    /** Boss 死亡大爆炸：慢放 + 多炸点 + 屏幕震动 */
+    /**
+     * Boss 死亡时触发的大爆炸效果：包含多个炸点、慢放动画以及屏幕震动。
+     *
+     * @param x Boss 中心的 X 坐标
+     * @param y Boss 中心的 Y 坐标
+     */
     public void addBossExplosion(int x, int y) {
         // 一圈炸点（形成范围爆炸）
         for (int dx = -50; dx <= 50; dx += 25) {
@@ -143,28 +282,49 @@ public abstract class AbstractGame extends JPanel {
         startScreenShake(8, 30);
     }
 
-    /** 开始屏幕震动 */
+    /**
+     * 开始屏幕震动效果。
+     *
+     * @param intensity 震动强度（像素偏移幅度）
+     * @param duration  震动持续帧数
+     */
     public void startScreenShake(int intensity, int duration) {
         screenShakeIntensity = intensity;
         screenShakeTime = duration;
     }
 
+    /**
+     * 判断游戏当前是否处于暂停状态。
+     *
+     * @return 暂停返回 true，否则返回 false
+     */
     public boolean isPaused() {
         return paused;
     }
 
     /**
-     * ! 设置参数部分
+     * 增加游戏分数。
+     *
+     * @param points 要增加的分值
      */
-
     public void addScore(int points) {
         this.score += points;
     }
 
+    /**
+     * 获取当前游戏得分。
+     *
+     * @return 当前得分
+     */
     public int getScore() {
         return score;
     }
 
+    /**
+     * 设置道具效果定时器。如果已有定时器则先取消。
+     *
+     * @param fireTimer 新的道具效果定时器
+     */
     public synchronized void setFireTimer(PropEffectTimer fireTimer) {
         if (this.fireTimer != null) {
             this.fireTimer.cancel();
@@ -173,9 +333,14 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * ! 构造器部分
+     * 构造一个游戏实例。
+     * <p>
+     * 根据指定的游戏模式初始化英雄机（单人/教程模式生成一台，双人模式生成两台）、
+     * 敌机工厂映射、游戏对象列表，并启动定时调度器。
+     * 同时注册键盘监听（ESC 暂停切换）和鼠标监听（暂停菜单按钮点击）。
+     *
+     * @param mode 游戏模式（{@link GameMode#SINGLE}、{@link GameMode#DOUBLE} 或 {@link GameMode#TUTORIAL}）
      */
-    // 通用构造函数（具体方法）
     public AbstractGame(GameMode mode) {
         this.gameMode = mode;
         rankingBoard.setGameMode(mode);
@@ -252,7 +417,11 @@ public abstract class AbstractGame extends JPanel {
 
     }
 
-    // 具体方法：初始化工厂映射
+    /**
+     * 初始化敌机工厂映射表。
+     * <p>
+     * 如果映射表为空则新建所有工厂实例；否则只更新已有工厂的倍率参数。
+     */
     private void initEnemyFactories() {
         if (enemyFactories.size() == 0) {
             enemyFactories.put(EnemyType.MOB, new MobEnemyFactory(enemyHpFactor, enemySpeedFactor));
@@ -270,11 +439,19 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
-    // 抽象方法：初始化游戏设置（由子类实现）
+    /**
+     * 初始化游戏设置（难度相关参数）。
+     * <p>
+     * 由各子类根据自身难度等级实现具体逻辑。
+     */
     protected abstract void initGameSettings();
 
     /**
-     * ! 游戏启动入口，执行游戏逻辑，流程骨架
+     * 游戏主循环入口，启动定时任务驱动整个游戏逻辑。
+     * <p>
+     * 每个刷新周期依次执行：难度升级检查 → 控制台信息输出 → 敌机生成 →
+     * Boss 生成判断 → 射击 → 键盘控制更新 → 子弹/飞机/道具移动 →
+     * 敌机逃离惩罚 → 碰撞检测 → 爆炸动画 → 后处理 → 界面重绘 → 游戏结束检查。
      */
     public final void action() {
 
@@ -331,6 +508,12 @@ public abstract class AbstractGame extends JPanel {
         timer.schedule(task, 0, timeInterval);
     }
 
+    /**
+     * 在控制台输出游戏状态信息，每 25 帧输出一次。
+     * <p>
+     * 包括 Boss 状态（血量/有效性）或距 Boss 登场所需分数，
+     * 以及距下次难度提升的剩余时间（仅在升级间隔非零且小于 5 秒时输出）。
+     */
     private void printInfo() {
         if (gameTime % 25 == 0) {
             if (bossEnemy != null && !bossEnemy.notValid()) {
@@ -350,18 +533,37 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
+    /**
+     * 判断当前帧是否应触发难度升级。
+     *
+     * @return 如果 {@code difficultyLevelUpInterval} 非零且时间到则返回 true
+     */
     private boolean shouldLevelUp() {
         return difficultyLevelUpInterval != 0 && gameTime % difficultyLevelUpInterval == 0;
     }
 
+    /**
+     * 难度提升时的回调方法。
+     * <p>
+     * 默认为空实现，子类可重写以添加具体的难度提升逻辑。
+     */
     protected void difficultyLevelUp() {
     }
 
+    /**
+     * 根据当前游戏状态随机获取一种敌机类型。
+     * <p>
+     * 各子类实现不同的随机策略以控制敌机出现概率分布。
+     *
+     * @return 随机选取的敌机类型
+     */
     protected abstract EnemyType getRandomEnemyType();
 
     /**
-     * ! 获取图片宽度和高度的方法 公用的
-     * 因为这个图片资源没有改变
+     * 根据敌机类型计算随机的初始 X 坐标，确保敌机不会超出屏幕边界。
+     *
+     * @param enemyType 敌机类型，用于获取对应图片宽度
+     * @return 随机 X 坐标（范围：[0, 窗口宽度 - 图片宽度)）
      */
     private int getRandomWidth(EnemyType enemyType) {
         int imageWidth = 0;
@@ -384,27 +586,31 @@ public abstract class AbstractGame extends JPanel {
         return (int) (Math.random() * (Main.WINDOW_WIDTH - imageWidth));
     }
 
+    /**
+     * 获取敌机生成的随机初始 Y 坐标。
+     * <p>
+     * 范围限制在屏幕顶部 5% 高度内，使敌机从上方进入。
+     *
+     * @return 随机 Y 坐标
+     */
     private int getRandomHeight() {
         return (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05);
     }
 
     /**
-     * ! BOSS敌机部分
-     */
-
-    /**
-     * 判断是否需要生成BOSS敌机
+     * 判断当前是否应生成 Boss 敌机。
+     * <p>
+     * 具体判断条件（如分数阈值）由各子类实现。
      *
-     * @see 抽象方法
+     * @return 应生成 Boss 返回 true，否则返回 false
      */
     protected abstract boolean shouldSpawnBoss();
 
     /**
-     * 生成BOSS敌机
-     *
-     * @see 具体方法中应用了钩子方法
-     *      - 整体逻辑通用 对应 具体方法
-     *      - BOSS敌机的血量设置 对应 钩子方法
+     * 生成 Boss 敌机。
+     * <p>
+     * 切换背景音乐为 Boss 战音乐，创建 Boss 实例并设置血量，添加到敌机列表中。
+     * Boss 的血量通过钩子方法 {@link #setBossEnemyHp()} 确定。
      */
     protected void spawnBossEnemy() {
         musicManager.stopBgmMusic(MusicType.BGM);
@@ -418,24 +624,21 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * BOSS敌机的血量设置
+     * 设置 Boss 敌机的血量。
+     * <p>
+     * 钩子方法，由子类覆盖以提供不同难度下的 Boss 血量。
      *
-     * @see 钩子方法 需要具体设置
-     *
+     * @return Boss 血量值
      */
     protected int setBossEnemyHp() {
         return bossEnemyHp;
     }
 
     /**
-     * ! 非BOSS敌机的生成部分
-     */
-
-    /**
-     * 随机生成敌机
-     *
-     * @see 具体方法中应用抽象方法
-     *      - 敌机生成的周期 和 最大敌机数量 不确定
+     * 按周期随机生成普通敌机。
+     * <p>
+     * 使用敌机工厂根据 {@link #getRandomEnemyType()} 返回的类型创建敌机，
+     * 并添加到屏幕中，数量不超过 {@link #enemyMaxNumber}。
      */
     protected void createRandomEnemy() {
         enemySpawnCounter++;
@@ -451,11 +654,9 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * ! Action部分
-     */
-
-    /**
-     * 射击部分
+     * 控制英雄机和敌机的射击行为。
+     * <p>
+     * 基于各自的射击周期计数器触发 {@link #heroShoot()} 和 {@link #enemyShoot()}。
      */
     protected void shootAction() {
         heroShootCounter++;
@@ -470,22 +671,26 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
+    /**
+     * 所有英雄机执行射击，将生成的子弹加入英雄机子弹列表。
+     */
     protected void heroShoot() {
-        // 所有英雄机射击
         for (HeroAircraft hero : heroes) {
             heroBullets.addAll(hero.shoot());
         }
     }
 
+    /**
+     * 所有敌机执行射击，将生成的子弹加入敌机子弹列表。
+     */
     protected void enemyShoot() {
-        // 敌机射击
         for (AbstractAircraft enemyAircraft : enemyAircrafts) {
             enemyBullets.addAll(enemyAircraft.shoot());
         }
     }
 
     /**
-     * 子弹移动部分
+     * 移动所有子弹（英雄机子弹和敌机子弹）。
      */
     protected void bulletsMoveAction() {
         for (BaseBullet bullet : heroBullets) {
@@ -497,7 +702,7 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * 飞机移动部分
+     * 移动所有敌机。
      */
     protected void aircraftsMoveAction() {
         for (AbstractAircraft enemyAircraft : enemyAircrafts) {
@@ -506,7 +711,10 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * 检测并惩罚逃离出屏的敌机：扣血 + 扣分，然后立即移除（避免重复惩罚）
+     * 检测并惩罚逃离出屏幕底部的敌机。
+     * <p>
+     * 对逃离敌机根据类型扣除英雄机的生命值并扣分，生成爆炸效果后移除该敌机。
+     * 各类型敌机惩罚值不同：普通10血5分、精英20血10分、老兵30血15分、王牌40血20分。
      */
     private void checkEscapedEnemies() {
         java.util.Iterator<AbstractAircraft> it = enemyAircrafts.iterator();
@@ -536,7 +744,11 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
-    // ★ 暂停切换
+    /**
+     * 切换游戏的暂停/继续状态。
+     * <p>
+     * 暂停时停止背景音乐，继续时恢复播放，并触发界面重绘以显示或隐藏暂停菜单。
+     */
     private void togglePause() {
         paused = !paused;
         if (paused) {
@@ -548,7 +760,11 @@ public abstract class AbstractGame extends JPanel {
         repaint();
     }
 
-    // ★ 退出游戏返回主菜单
+    /**
+     * 退出游戏，返回主菜单。
+     * <p>
+     * 取消定时器、停止所有音乐，关闭当前游戏窗口并打开主菜单界面。
+     */
     private void exitGame() {
         timer.cancel();
         musicManager.stopAllMusic();
@@ -558,6 +774,11 @@ public abstract class AbstractGame extends JPanel {
         });
     }
 
+    /**
+     * 更新所有键盘控制英雄机的位置。
+     * <p>
+     * 用于双人模式中由键盘（WASD）控制的玩家1。
+     */
     protected void updateKeyboardHeroes() {
         for (KeyboardController kb : keyboardControllers) {
             kb.updatePosition();
@@ -565,7 +786,7 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * 道具移动部分
+     * 移动所有掉落道具。
      */
     protected void propMoveAction() {
         for (AbstractProp prop : props) {
@@ -574,9 +795,16 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * ! 碰撞检测部分
+     * 碰撞检测主逻辑。
+     * <p>
+     * 依次检测以下碰撞：
+     * <ol>
+     *   <li>敌机子弹 vs 英雄机</li>
+     *   <li>英雄机子弹 vs 敌机（含得分、道具掉落、爆炸效果）</li>
+     *   <li>英雄机 vs 敌机（直接碰撞导致游戏结束）</li>
+     *   <li>道具 vs 英雄机（触发道具效果）</li>
+     * </ol>
      */
-
     protected void crashCheckAction() {
         // 敌机子弹攻击所有英雄机
         for (BaseBullet bullet : enemyBullets) {
@@ -654,6 +882,11 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
+    /**
+     * 根据敌机类型增加对应分数。
+     *
+     * @param enemyAircraft 被击毁的敌机对象
+     */
     private void addGameScore(AbstractAircraft enemyAircraft) {
         if (enemyAircraft instanceof MobEnemy) {
             addScore(EnemyType.MOB.getScore());
@@ -668,15 +901,26 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
+    /**
+     * 触发敌机被击毁后的道具掉落逻辑。
+     * <p>
+     * 由子类实现具体的随机掉落策略。
+     *
+     * @param enemyAircraft 被击毁的敌机对象
+     */
     protected abstract void triggerProp(AbstractAircraft enemyAircraft);
 
-    // 爆炸动画帧推进 + 屏幕震动衰减
+    /**
+     * 推进爆炸动画帧并衰减屏幕震动效果。
+     * <p>
+     * 每个动画帧按各自速度前进（1=正常，2=慢放），达到最大帧数（8）后移除。
+     * 屏幕震动的持续时间逐帧递减。
+     */
     private void advanceExplosions() {
-        // 爆炸帧推进
         Iterator<int[]> it = explosions.iterator();
         while (it.hasNext()) {
             int[] e = it.next();
-            e[2] += e[3]; // 按速度推进（1=正常，2=慢放，实际帧增快）
+            e[2] += e[3];
             if (e[2] >= 8) {
                 it.remove();
             }
@@ -689,14 +933,9 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * ! 后处理部分
-     */
-
-    /**
-     * 后处理：
-     * 1. 删除无效的子弹
-     * 2. 删除无效的敌机
-     * 3. 删除无效的道具
+     * 后处理清理操作。
+     * <p>
+     * 从各对象列表中移除所有已标记为无效（notValid）的子弹、敌机和道具。
      */
     private void postProcessAction() {
         enemyBullets.removeIf(AbstractFlyingObject::notValid);
@@ -706,7 +945,10 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * 检查游戏是否结束，若结束：关闭线程池
+     * 检查游戏是否结束。
+     * <p>
+     * 若所有英雄机均阵亡，则触发爆炸动画、停止定时器、
+     * 播放游戏结束音效并返回主菜单（携带最终得分等信息）。
      */
     protected void checkResultAction() {
         boolean allDead = true;
@@ -717,7 +959,6 @@ public abstract class AbstractGame extends JPanel {
             }
         }
         if (allDead) {
-            // 所有英雄机位置触发爆炸动画
             for (HeroAircraft h : heroes) {
                 addExplosion(h.getLocationX(), h.getLocationY());
             }
@@ -734,11 +975,12 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * 安全关闭游戏窗口并返回主菜单
+     * 安全关闭当前游戏窗口并释放资源。
+     * <p>
+     * 通过 {@link SwingUtilities#invokeLater} 在事件分派线程中执行窗口关闭。
      */
     protected void closeGameWindow() {
         SwingUtilities.invokeLater(() -> {
-            // 获取顶层窗口
             Window window = SwingUtilities.getWindowAncestor(this);
             if (window != null) {
                 window.dispose();
@@ -747,14 +989,13 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
-     * ! paint部分 公用的
-     * 因为画图的逻辑不变 只是要画的东西变了
-     * 但是paint部分只管画图逻辑
-     */
-
-    /**
-     * 重写 paint方法
-     * 通过重复调用paint方法，实现游戏动画
+     * 重写组件的绘制方法，实现游戏画面的完整渲染。
+     * <p>
+     * 每帧依次绘制：滚动背景 → 敌机子弹 → 英雄机子弹 → 敌机 → 道具 →
+     * 英雄机 → 爆炸动画 → 得分生命值信息 → 暂停菜单（如暂停）。
+     * 同时支持屏幕震动效果。
+     *
+     * @param g 绘图上下文
      */
     @Override
     public void paint(Graphics g) {
@@ -809,9 +1050,12 @@ public abstract class AbstractGame extends JPanel {
     }
 
     /**
+     * 绘制列表中所有飞行对象在屏幕上的正确位置。
+     * <p>
+     * 以各对象的中心坐标为准，向左上方偏移半个图片尺寸进行绘制。
      *
-     * @param g       画笔
-     * @param objects 列表（元素是AbstractFlyingObject以及它的子类） 所以包括：飞机类，子弹类，道具类
+     * @param g       绘图上下文
+     * @param objects 飞行对象列表（飞机、子弹、道具等 AbstractFlyingObject 子类）
      */
     private void paintImageWithPositionRevised(Graphics g, List<? extends AbstractFlyingObject> objects) {
         if (objects.isEmpty()) {
@@ -826,6 +1070,14 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
+    /**
+     * 在屏幕左上角绘制当前得分和生命值信息。
+     * <p>
+     * 单人模式显示 "SCORE" 和 "LIFE"；双人模式分别显示 "P1 LIFE" 和 "P2 LIFE"。
+     * 同时显示"按 ESC 暂停"的提示文字。
+     *
+     * @param g 绘图上下文
+     */
     private void paintScoreAndLife(Graphics g) {
         int x = 10;
         int y = 25;
@@ -849,7 +1101,14 @@ public abstract class AbstractGame extends JPanel {
         }
     }
 
-    // 绘制暂停菜单
+    /**
+     * 绘制暂停菜单。
+     * <p>
+     * 在半透明遮罩上绘制"游戏暂停"标题、"继续"按钮和"退出"按钮，
+     * 以及"按 ESC 键继续游戏"的提示信息。
+     *
+     * @param g 绘图上下文
+     */
     private void drawPauseMenu(Graphics g) {
         // 半透明遮罩
         g.setColor(new Color(0, 0, 0, 150));
