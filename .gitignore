@@ -1,5 +1,8 @@
-# 编译输出
-out/
-
-# 本地游戏数据（排行榜序列化 .dat 文件）
-data/
+# Default ignored files
+/shelf/
+/workspace.xml
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/

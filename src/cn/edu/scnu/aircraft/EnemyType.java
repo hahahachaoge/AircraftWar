@@ -4,9 +4,9 @@ package cn.edu.scnu.aircraft;
  * @author 黄彪骐
  */
 public enum EnemyType {
-    MOB(10,10,0,3), 
-    ELITE(20,20,0,5), 
-    VETERAN(30,30,3,7),
+    MOB(10,10,0,3),
+    ELITE(20,50,0,5),
+    VETERAN(30,50,3,7),
     ACE(50,50,5,9), 
     BOSS(100,100,5,0);
 

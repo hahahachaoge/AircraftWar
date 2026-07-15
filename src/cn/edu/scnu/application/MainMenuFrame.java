@@ -59,23 +59,23 @@ public class MainMenuFrame extends JFrame {
         titlePanel.setBackground(Color.WHITE);
 
         JLabel modeLabel = new JLabel("当前模式：");
-        modeLabel.setFont(new Font("微软雅黑", Font.BOLD, 16));
-        modeLabel.setBounds(35, 18, 100, 30);
+        modeLabel.setFont(new Font("微软雅黑", Font.BOLD, 18));
+        modeLabel.setBounds(35, 20, 100, 30);
         titlePanel.add(modeLabel);
 
         modeComboBox = new JComboBox<>(new String[]{"单人模式", "双人模式"});
         modeComboBox.setFont(new Font("微软雅黑", Font.BOLD, 16));
-        modeComboBox.setBounds(115, 16, 110, 36);
+        modeComboBox.setBounds(115, 18, 110, 36);
         titlePanel.add(modeComboBox);
 
         JLabel gameTitle = new JLabel("飞机大战", SwingConstants.CENTER);
         gameTitle.setFont(new Font("微软雅黑", Font.BOLD, 45));
-        gameTitle.setBounds(0, 5, 1370, 50);
+        gameTitle.setBounds(0, 10, 1370, 50);
         titlePanel.add(gameTitle);
 
         tutorialButton = new JButton("教学关");
-        tutorialButton.setFont(new Font("微软雅黑", Font.BOLD, 16));
-        tutorialButton.setBounds(1200, 12, 120, 36);
+        tutorialButton.setFont(new Font("微软雅黑", Font.BOLD, 18));
+        tutorialButton.setBounds(1200, 14, 160, 45);
         tutorialButton.addActionListener(e -> startTutorial());
         titlePanel.add(tutorialButton);
     }

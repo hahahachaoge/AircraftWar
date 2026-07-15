@@ -35,20 +35,24 @@
 
 | 特性 | 说明 |
 |------|------|
+| **2 种游戏模式** | 单人模式（鼠标操控）、双人合作模式（键盘 + 鼠标） |
 | **5 种难度模式** | 入门 → 普通 → 困难 → 专家 → 地狱 |
 | **5 种敌机类型** | 普通 (Mob)、精英 (Elite)、精锐 (Veteran)、王牌 (Ace)、Boss |
 | **5 种道具** | 回血、火力增强、超级火力、炸弹、冰冻 |
 | **3 种射击策略** | 直射 (Straight)、散射 (Scatter)、环形弹幕 (Ring) |
 | **动态难度提升** | 随时间自动增加敌机数量、速度、血量 |
-| **Boss 战** | 每达到分数阈值触发 Boss 登场 |
-| **排行榜** | 按难度分类存储，支持查看和删除记录 |
-| **背景音乐与音效** | 使用 Java Sound API 播放 WAV 格式音频 |
+| **Boss 战** | 每达到分数阈值触发 Boss 登场，BGM 瞬间切换（零卡顿） |
+| **教学关** | 新手引导，支持单人和双人教学 |
+| **排行榜** | 按难度 + 模式分类存储，支持查看/删除/导出 XLS |
+| **漏敌惩罚** | 敌机逃离屏幕底部会扣血和扣分，不同类型惩罚不同 |
+| **暂停功能** | 游戏中按 ESC 暂停，可继续或退出 |
+| **背景音乐与音效** | 使用 Java Sound API (Clip) 播放 WAV 格式音频 |
 
 ### 1.3 技术栈
 
 - **语言**: Java 11+
-- **GUI**: Java Swing (`javax.swing.*`)
-- **音频**: Java Sound API (`javax.sound.sampled`)
+- **GUI**: Java Swing (`javax.swing.*`)，CardLayout 卡片式界面
+- **音频**: Java Sound API (`javax.sound.sampled`)，所有音频 Clip 预加载
 - **持久化**: Java 对象序列化（`.dat` 文件）
 - **构建**: IntelliJ IDEA（无 Maven/Gradle，直接基于源码目录编译）
 
@@ -103,10 +107,10 @@
 
 | 文件名 | 用途 |
 |--------|------|
-| `rank_beginner.dat` | 入门难度排行榜 |
-| `rank_basic.dat` | 普通难度排行榜 |
+| `rank_*_single.dat` | 各难度单人模式排行榜 |
+| `rank_*_double.dat` | 各难度双人模式排行榜 |
 
-> ⚠️ `intermediate`、`advanced`、`expert` 三个难度对应的 `.dat` 文件在首次游戏后会自动生成。
+> 💡 `data/rank/` 目录在首次写入记录时自动创建。
 
 ---
 
@@ -117,8 +121,8 @@ AircraftWar-main/
 ├── src/                              # 📂 源代码根目录
 │   └── cn/edu/scnu/
 │       ├── aircraft/                 # ✈️ 飞机类体系
-│       │   ├── AbstractAircraft.java #   飞机抽象基类
-│       │   ├── HeroAircraft.java     #   英雄机（单例模式）
+│       │   ├── AbstractAircraft.java #   飞机抽象基类（血量/射击/道具掉落）
+│       │   ├── HeroAircraft.java     #   英雄机（可多实例，支持双人）
 │       │   ├── MobEnemy.java         #   普通敌机（不可射击，不掉道具）
 │       │   ├── EliteEnemy.java       #   精英敌机
 │       │   ├── VeteranEnemy.java     #   精锐敌机
@@ -134,18 +138,26 @@ AircraftWar-main/
 │       │       └── BossEnemyFactory.java    #   Boss 敌机工厂
 │       ├── application/              # 🖥️ 应用层
 │       │   ├── Main.java             #   程序入口
-│       │   ├── MainMenuFrame.java    #   主菜单窗口
+│       │   ├── MainMenuFrame.java    #   主菜单窗口（CardLayout 卡片管理）
+│       │   ├── GameMode.java         #   游戏模式枚举（SINGLE/DOUBLE/TUTORIAL）
+│       │   ├── HeroController.java   #   鼠标控制英雄机（暂停时禁止移动）
+│       │   ├── KeyboardController.java # 键盘控制英雄机（WASD，双人模式用）
 │       │   ├── ImageManager.java     #   图片资源管理器
-│       │   ├── HeroController.java   #   鼠标控制英雄机
+│       │   ├── ModePanel.java        #   难度图片按钮面板
+│       │   ├── InstructionPanel.java #   游戏说明面板（带滚动条）
+│       │   ├── RankingSelectPanel.java # 排行榜难度选择面板
+│       │   ├── RankingShowPanel.java # 排行榜数据展示面板（含导出功能）
+│       │   ├── NameInputPanel.java   #   游戏结束姓名输入面板
 │       │   ├── RankingBoard.java     #   排行榜调度
-│       │   ├── RankingFrame.java     #   排行榜展示窗口
+│       │   ├── RankingFrame.java     #   排行榜展示窗口（旧版）
 │       │   └── game/                 # 🎮 游戏逻辑
 │       │       ├── AbstractGame.java #     游戏基类（模板方法模式）
 │       │       ├── BeginningGame.java#     入门难度
 │       │       ├── BasicGame.java    #     普通难度
 │       │       ├── IntermendtateGame.java # 困难难度
 │       │       ├── AdvancedGame.java #     专家难度
-│       │       └── ExpertGame.java   #     地狱难度
+│       │       ├── ExpertGame.java   #     地狱难度
+│       │       └── TutorialGame.java #     教学关
 │       ├── basic/                    # 🔤 基础抽象
 │       │   └── AbstractFlyingObject.java # 飞行对象基类
 │       ├── bullet/                   # 🔫 子弹体系
@@ -174,21 +186,19 @@ AircraftWar-main/
 │       │       └── FrozenSupply.java #   冰冻道具
 │       ├── rank/                     # 🏆 排行榜
 │       │   ├── Difficulty.java       #   难度枚举
-│       │   ├── PlayRecord.java       #   游戏记录（可序列化）
+│       │   ├── PlayRecord.java       #   游戏记录（可序列化，含 GameMode）
 │       │   ├── PlayRecordDao.java    #   DAO 接口
-│       │   └── PlayRecordDaoImpl.java#   DAO 实现
+│       │   └── PlayRecordDaoImpl.java#   DAO 实现（自动创建 data 目录）
 │       └── music/                    # 🎵 音频管理
-│           ├── MusicManager.java     #   音频管理器（单例）
-│           └── MusicThread.java      #   音频播放线程
+│           └── MusicManager.java     #   音频管理器（单例，Clip 预加载全部音频）
 │
 ├── images/                           # 🖼️ 图片资源（副本，编译时复制）
 ├── data/rank/                        # 💾 排行榜数据存储
-│   ├── rank_beginner.dat
-│   └── rank_basic.dat
+│   ├── rank_*.dat
 ├── out/                              # 🔨 编译输出
 ├── .idea/                            # 📁 IntelliJ IDEA 配置
 ├── AircraftWar-base.iml              # 📁 IntelliJ 模块配置
-└── PROJECT_DOCUMENTATION.md          # 📝 本文档
+└── README.md                         # 📝 本文档
 ```
 
 ---
@@ -197,21 +207,17 @@ AircraftWar-main/
 
 ### 4.1 方式一：IntelliJ IDEA（推荐）
 
-1. **打开项目**：File → Open → 选择项目根目录 `AircraftWar-main`
+1. **打开项目**：File → Open → 选择项目根目录
 2. **配置 JDK**：File → Project Structure → Project SDK → 选择 JDK 11+
 3. **运行主类**：找到 `src/cn/edu/scnu/application/Main.java`，右键 → Run `Main.main()`
 
 ### 4.2 方式二：命令行编译运行
 
-建议使用项目根目录的 `run.bat` 脚本一键编译运行（自动处理 UTF-8 编码）。
-
-也可手动执行：
-
 ```bash
 # 1️⃣ 编译所有 Java 源文件
 javac -encoding UTF-8 -d out -sourcepath src src/cn/edu/scnu/application/Main.java
 
-# 2️⃣ 将图片资源复制到输出目录
+# 2️⃣ 将图片和音频资源复制到输出目录
 # Windows
 xcopy /E /I src\images out\images
 xcopy /E /I src\videos out\videos
@@ -221,10 +227,6 @@ cp -r src/images out/images
 cp -r src/videos out/videos
 
 # 3️⃣ 运行游戏
-# Windows
-java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
-
-# macOS / Linux
 java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
 ```
 
@@ -237,11 +239,10 @@ java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
 
 ### 4.4 启动后效果
 
-启动后出现 **主菜单窗口**（400×500 像素），包含：
-- 游戏标题 "飞机大战"
-- 5 个难度按钮（简单～地狱）
-- 排行榜按钮
-- 退出游戏按钮
+启动后出现 **主菜单窗口**（1400×800 像素），包含：
+- 顶部：游戏模式选择（单人/双人）+ 居中的"飞机大战"标题 + 教学关按钮
+- 中央：5 个难度图片按钮（等比缩放居中裁剪）
+- 底部：游戏说明、排行榜、退出游戏三个大按钮
 
 ---
 
@@ -251,44 +252,48 @@ java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
 
 | 操作 | 方式 | 说明 |
 |------|------|------|
-| 移动 | **鼠标拖拽** | 在游戏画面上按住并拖动鼠标，英雄机跟随鼠标位置移动 |
+| **单人模式移动** | **鼠标拖拽** | 在游戏画面上拖拽，英雄机跟随鼠标位置移动 |
+| **双人玩家1（左）** | **键盘 WASD** | 控制左侧飞机移动 |
+| **双人玩家2（右）** | **鼠标拖拽** | 控制右侧飞机移动 |
 | 射击 | **自动** | 英雄机会按固定周期自动开火，无需按键 |
-| 暂停 | 不支持 | 当前版本无暂停功能 |
-| 退出 | 窗口关闭 | 关闭窗口或击毁后选择退出 |
+| 暂停 | **ESC 键** | 游戏中按 ESC 暂停，显示暂停菜单 |
+| 退出 | 暂停菜单或窗口关闭 | 暂停后点击"退出"或直接关闭窗口 |
 
 ### 5.2 游戏规则
 
 1. **得分**：击毁敌机获得对应分数
-2. **生命值**：英雄机被子弹击中会扣血，血量为 0 时游戏结束
-3. **Boss 战**：当累计分数达到阈值时，Boss 敌机登场
-4. **难度提升**：游戏过程中会定期自动提升难度（敌机更多、更快、更耐打）
-5. **结束登记**：游戏结束后会弹出对话框输入玩家名，记录到排行榜
+2. **生命值**：英雄机被子弹击中会扣血，所有英雄机死亡时游戏结束
+3. **漏敌惩罚**：敌机飞出屏幕底部会扣血扣分，不同类型惩罚不同（见[敌机系统](#7-敌机系统)）
+4. **Boss 战**：当累计分数达到阈值时，Boss 敌机登场
+5. **难度提升**：游戏过程中会定期自动提升难度（敌机更多、更快、更耐打）
+6. **结束登记**：游戏结束后在主界面直接输入玩家名，记录到排行榜
 
 ### 5.3 游戏界面
 
 游戏窗口大小固定为 **512×768** 像素，界面上包含：
-- **顶部**：SCORE（当前得分）、LIFE（英雄机剩余生命值）
+- **顶部**：SCORE（当前得分）、LIFE（英雄机剩余生命值）、ESC 暂停提示
 - **中部**：游戏区域（背景自动向下滚动，营造飞行效果）
 - **底部**：英雄机初始位置
 
 ### 5.4 游戏流程
 
 ```
-主菜单 → 选择难度 → 游戏开始（背景音乐启动）
-                            ↓
-                   敌机不断生成并从上方出现
-                            ↓
-                   英雄机自动射击，躲避敌机和子弹
-                            ↓
-                   拾取道具增强能力/恢复生命
-                            ↓
-                   达到分数阈值 → Boss 登场
-                            ↓
-                  击毁 Boss / 继续积累分数 → 下一只 Boss
-                            ↓
-                  英雄机被击毁（HP ≤ 0）→ 游戏结束
-                            ↓
-                  输入玩家名 → 保存记录 → 显示排行榜
+主菜单 → 选择模式（单人/双人） → 选择难度 → 游戏开始
+                                ↓ 或 →
+                       教学关（单人/双人教学）
+                                    ↓
+                       敌机不断生成并从上方出现
+                       英雄机自动射击，躲避敌机和子弹
+                                    ↓
+                       拾取道具增强能力/恢复生命
+                                    ↓
+                       达到分数阈值 → Boss 登场（BGM 瞬间切换）
+                                    ↓
+                       击毁 Boss / 继续积累分数 → 下一只 Boss
+                                    ↓
+                       所有英雄机被击毁 → 游戏结束
+                                    ↓
+                       输入玩家名 → 保存记录 → 显示排行榜
 ```
 
 ---
@@ -369,26 +374,41 @@ java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
 
 ### 7.1 敌机类型
 
-| 敌机类型 | 基础 HP | 基础分数 | 基础速度(X,Y) | 是否可射击 | Bo m b 反应 | Frozen 反应 |
-|----------|:-------:|:--------:|:--------------:|:----------:|:-----------:|:-----------:|
-| 🟢 普通 (Mob) | 10 | 10 | (0, 3) | ❌ | 坠毁 | 永久静止 |
-| 🔵 精英 (Elite) | 20 | 20 | (0, 5) | ✅ | 坠毁 | 静止4秒后恢复 |
-| 🟣 精锐 (Veteran) | 30 | 30 | (3, 7) | ✅ | 坠毁 | 静止3秒后恢复 |
-| 🟡 王牌 (Ace) | 50 | 50 | (5, 9) | ✅ | 掉血10点 | 减速50%持续3秒 |
-| 🔴 Boss | 100* | 100 | (5, 0) | ✅ | 无影响 | 无影响 |
+| 敌机类型 | 基础 HP | 击毁所需 | 基础分数 | 基础速度(X,Y) | 可射击 | 掉落道具 | Bomb 反应 | Frozen 反应 |
+|----------|:-------:|:--------:|:--------:|:--------------:|:------:|:--------:|:---------:|:-----------:|
+| 🟢 普通 (Mob) | 10 | 1 发 | 10 | (0, 3) | ❌ | ❌ | 坠毁 | 永久静止 |
+| 🔵 精英 (Elite) | 50 | **2 发** | 20 | (0, 5) | ✅ | ✅ | 坠毁 | 静止4秒后恢复 |
+| 🟣 精锐 (Veteran) | 50 | **2 发** | 30 | (3, 7) | ✅ | ✅ | 坠毁 | 静止3秒后恢复 |
+| 🟡 王牌 (Ace) | 50 | **2 发** | 50 | (5, 9) | ✅ | ✅ | 掉血10点 | 减速50%持续3秒 |
+| 🔴 Boss | 100* | 多发 | 100 | (5, 0) | ✅ | ✅ | 无影响 | 无影响 |
 
 > `*` Boss 基础 HP 为 100，实际 HP 由各难度模式通过 `setBossEnemyHp()` 方法设定（见 6.2 节）。
+> 英雄机子弹威力为 30，因此 Elite、Veteran、Ace 均需 2 发击毁，Mob 只需 1 发。
 
 ### 7.2 敌机行为
 
-- **所有敌机**：从屏幕上方生成，向下移动，超出屏幕底部则消失
+- **所有敌机**：从屏幕上方生成，向下移动，超出屏幕底部则触发漏敌惩罚
 - **普通 (Mob)**：最简单的敌机，不会射击，不掉落道具
 - **精英 (Elite)**：可以射击，掉落道具（概率受难度参数影响）
 - **精锐 (Veteran)**：可以射击，掉落道具，横向移动（speedX > 0）
 - **王牌 (Ace)**：可以射击，掉落道具（类型更丰富），横向移动速度更快
 - **Boss**：血量极高，使用环形射击，每次掉落 3 个道具，免疫炸弹和冰冻效果
 
-### 7.3 敌机掉落道具概率与类型
+### 7.3 ⚠️ 漏敌惩罚
+
+敌机飞出屏幕底部时触发惩罚，不同类型惩罚不同：
+
+| 敌机类型 | 扣 HP | 扣分 |
+|----------|:-----:|:----:|
+| 普通 (Mob) | 10 | 5 |
+| 精英 (Elite) | 20 | 10 |
+| 精锐 (Veteran) | 30 | 15 |
+| 王牌 (Ace) | 40 | 20 |
+| Boss | 10 | 5 |
+
+> 💡 **策略**：优先消灭高威胁敌机（Ace），减少漏敌损失。
+
+### 7.4 敌机掉落道具概率与类型
 
 各敌机掉落道具时，首先根据难度参数 `propRand` 决定是否掉落，再随机选择道具类型。
 
@@ -403,7 +423,7 @@ java -Dfile.encoding=UTF-8 -cp "out" cn.edu.scnu.application.Main
 > Boss 掉落时必定掉落（概率 100%），且 Boss 被击毁时一次性掉落 3 个道具。
 > 普通敌机 (Mob) 不掉落任何道具。
 
-### 7.4 敌机工厂体系
+### 7.5 敌机工厂体系
 
 采用 **工厂方法模式**，每种敌机有对应的工厂类：
 
@@ -549,30 +569,32 @@ PlayRecord (实现 Comparable + Serializable)
 ├── score: int            — 游戏得分
 ├── name: String          — 玩家名
 ├── dateTime: LocalDateTime — 记录时间
-└── difficulty: Difficulty  — 游戏难度
+├── difficulty: Difficulty  — 游戏难度
+└── gameMode: GameMode      — 游戏模式（单人/双人）
 
 排序规则: 难度高 > 难度低 → 分数高 > 分数低 → 时间新 > 时间旧
 ```
 
 ### 10.2 存储结构
 
-每个难度对应一个独立的 `.dat` 文件：
+单人/双人模式使用独立的文件，避免记录冲突：
 
-| 难度 | 文件路径 |
-|------|----------|
-| 简单 | `data/rank/rank_beginner.dat` |
-| 普通 | `data/rank/rank_basic.dat` |
-| 困难 | `data/rank/rank_intermediate.dat` |
-| 专家 | `data/rank/rank_advanced.dat` |
-| 地狱 | `data/rank/rank_expert.dat` |
+| 难度 | 单人模式 | 双人模式 |
+|------|----------|----------|
+| 简单 | `data/rank/rank_beginner_single.dat` | `data/rank/rank_beginner_double.dat` |
+| 普通 | `data/rank/rank_basic_single.dat` | `data/rank/rank_basic_double.dat` |
+| 困难 | `data/rank/rank_intermediate_single.dat` | `data/rank/rank_intermediate_double.dat` |
+| 专家 | `data/rank/rank_advanced_single.dat` | `data/rank/rank_advanced_double.dat` |
+| 地狱 | `data/rank/rank_expert_single.dat` | `data/rank/rank_expert_double.dat` |
 
 ### 10.3 排行榜功能
 
-- ✅ 游戏结束后自动保存记录
-- ✅ 按难度分类查看排行榜
-- ✅ 表格形式展示（排名、玩家名、分数、记录时间）
-- ✅ 支持选中并删除指定记录
-- ✅ 关闭排行榜后返回主菜单
+- ✅ **游戏结束后自动保存记录**：在主界面直接输入玩家名
+- ✅ **按难度分类查看排行榜**：卡片式界面，无需弹窗
+- ✅ **单人/双人记录合并显示**：表格含"模式"列区分
+- ✅ **支持删除指定记录**
+- ✅ **支持导出排行榜**：点击"导出排行"生成 `.xls` 文件（HTML 表格格式，Excel/WPS 直接打开）
+- ✅ **返回主菜单**：一键返回主页
 
 ---
 
@@ -582,15 +604,18 @@ PlayRecord (实现 Comparable + Serializable)
 
 音频系统使用 **`MusicManager`** 单例管理所有音频资源：
 
-- **背景音乐**（BGM）：使用独立的 `MusicThread` 线程播放，支持循环播放
-- **音效**（SFX）：预加载到 `Clip` 对象，通过 4 线程池播放，响应快速无延迟
+- **所有音频（BGM + 音效）**：启动时全部预加载到 `Clip` 对象，零运行时读盘
+- **背景音乐切换**：`clip.stop()` + `clip.loop()`，**瞬间切换零卡顿**
+- **音效播放**：`clip.setFramePosition(0)` + `clip.start()`，非阻塞
+
+> v1.6 之前 BGM 使用独立线程 `MusicThread` + `SourceDataLine`，每次切换需创建新线程并从磁盘读取 WAV 文件，Boss 进出时卡顿严重。v1.6 改用 Clip 统一管理后彻底解决。
 
 ### 11.2 音频类型
 
 | 类型 | 文件 | 播放方式 | 说明 |
 |------|------|:--------:|------|
-| 普通 BGM | `bgm.wav` | 循环线程 | 游戏过程中持续播放 |
-| Boss BGM | `bgm_boss.wav` | 循环线程 | Boss 登场时切换 |
+| 普通 BGM | `bgm.wav` | 预加载 Clip 循环 | 游戏过程中持续播放 |
+| Boss BGM | `bgm_boss.wav` | 预加载 Clip 循环 | Boss 登场时瞬间切换 |
 | 爆炸音效 | `bomb_explosion.wav` | 预加载 Clip | 敌机被击毁时播放 |
 | 命中音效 | `bullet_hit.wav` | 预加载 Clip | 子弹命中时播放 |
 | 游戏结束 | `game_over.wav` | 预加载 Clip | 英雄机被击毁时播放 |
@@ -598,8 +623,9 @@ PlayRecord (实现 Comparable + Serializable)
 
 ### 11.3 音量控制
 
-- 背景音乐：+6.0 dB 增益（稍大音量）
-- 短音效：-8.0 dB 增益（爆炸音效 -20.0 dB 以防过于刺耳）
+- 背景音乐（BGM/BGM_BOSS）：+6.0 dB 增益（稍大音量）
+- 短音效：-8.0 dB 增益
+- 爆炸音效：-20.0 dB（防过于刺耳）
 
 ---
 
@@ -610,32 +636,15 @@ PlayRecord (实现 Comparable + Serializable)
 ### 12.1 单例模式 (Singleton)
 
 **使用位置**：
-- `HeroAircraft` — 游戏中只有一个英雄机实例
 - `MusicManager` — 全局只用一个音频管理器
 - `ObserverManager` — 全局共享的观察者注册中心
-
-**实现方式**：双检锁（Double-Checked Locking）
-
-```java
-private static volatile HeroAircraft instance = null;
-public static HeroAircraft getInstance(...) {
-    if (instance == null) {
-        synchronized (HeroAircraft.class) {
-            if (instance == null) {
-                instance = new HeroAircraft(...);
-            }
-        }
-    }
-    return instance;
-}
-```
 
 ### 12.2 模板方法模式 (Template Method)
 
 **使用位置**：`AbstractGame` 游戏基类
 
 **体现**：
-- `action()` 方法定义了游戏循环的骨架（生成敌机 → 射击 → 移动 → 碰撞检测 → 重绘 → 结束检查）
+- `action()` 方法定义了游戏循环的骨架（生成敌机 → 射击 → 移动 → 碰撞检测 → 漏敌惩罚 → 重绘 → 结束检查）
 - `initGameSettings()`、`getRandomEnemyType()`、`shouldSpawnBoss()`、`triggerProp()` 等抽象方法由子类实现
 - `spawnBossEnemy()` 中调用了 `setBossEnemyHp()` 钩子方法
 
@@ -700,7 +709,7 @@ public static HeroAircraft getInstance(...) {
         │       ├── BombSupply → notify BOMB 观察者
         │       └── FrozenSupply → notify FROZEN 观察者
         ├── PropFactory (Simple Factory) → 创建道具
-        └── HeroAircraft (Singleton)
+        └── MusicManager (Singleton)
 ```
 
 ---
@@ -716,7 +725,7 @@ AbstractFlyingObject (坐标 / 速度 / 碰撞检测 / 图片)
 │   ├── HeroBullet       — 英雄机子弹
 │   └── EnemyBullet      — 敌机子弹（实现 EnemyObserver）
 ├── AbstractAircraft (血量 / 射击 / 道具掉落)
-│   ├── HeroAircraft     — 英雄机（单例，鼠标控制）
+│   ├── HeroAircraft     — 英雄机（支持多实例）
 │   ├── MobEnemy         — 普通敌机
 │   ├── EliteEnemy       — 精英敌机
 │   ├── VeteranEnemy     — 精锐敌机
@@ -737,7 +746,8 @@ AbstractGame (模板方法 / 游戏循环)
 ├── BasicGame        — 普通模式
 ├── IntermendtateGame — 困难模式
 ├── AdvancedGame     — 专家模式
-└── ExpertGame       — 地狱模式
+├── ExpertGame       — 地狱模式
+└── TutorialGame    — 教学关（单人/双人）
 ```
 
 ### 13.2 游戏循环（主循环）
@@ -745,25 +755,28 @@ AbstractGame (模板方法 / 游戏循环)
 位于 `AbstractGame.action()` 方法中，由 `java.util.Timer` 调度，每 **50ms** 执行一次：
 
 ```
-① gameTime++ (帧计数)
-② shouldLevelUp()? → difficultyLevelUp() (难度升级检查)
-③ printInfo() (控制台信息输出)
-④ createRandomEnemy() (敌机生成)
-⑤ shouldSpawnBoss()? → spawnBossEnemy() (Boss检查)
-⑥ shootAction() (射击)
+① paused? → 只重绘，不更新逻辑（暂停状态）
+② gameTime++ (帧计数)
+③ shouldLevelUp()? → difficultyLevelUp() (难度升级检查)
+④ printInfo() (控制台信息输出)
+⑤ createRandomEnemy() (敌机生成)
+⑥ shouldSpawnBoss()? → spawnBossEnemy() (Boss检查, BGM切换)
+⑦ shootAction() (射击)
    ├── heroShoot()   — 英雄机自动射击
    └── enemyShoot()  — 所有敌机射击
-⑦ bulletsMoveAction() (子弹移动)
-⑧ aircraftsMoveAction() (飞机移动)
-⑨ propMoveAction() (道具移动)
-⑩ crashCheckAction() (碰撞检测)
+⑧ updateKeyboardHeroes() (双人键盘控制更新)
+⑨ bulletsMoveAction() (子弹移动)
+⑩ aircraftsMoveAction() (飞机移动)
+⑪ checkEscapedEnemies() (漏敌惩罚检测)
+⑫ propMoveAction() (道具移动)
+⑬ crashCheckAction() (碰撞检测)
    ├── 敌机子弹 → 英雄机
    ├── 英雄机子弹 → 敌机
-   ├── 英雄机 ↔ 敌机 相撞
+   ├── 英雄机 ↔ 敌机 相撞（立即结束）
    └── 英雄机 → 道具
-⑪ postProcessAction() (清理无效对象)
-⑫ repaint() (重绘界面)
-⑬ checkResultAction() (游戏结束判定)
+⑭ postProcessAction() (清理无效对象)
+⑮ repaint() (重绘界面)
+⑯ checkResultAction() (游戏结束判定)
 ```
 
 ### 13.3 碰撞检测机制
@@ -817,13 +830,12 @@ BufferedImage img = ImageManager.get(someObject);
 
 ### 14.3 排行榜数据文件找不到
 
-游戏首次运行时，只有 `beginner` 和 `basic` 两个难度的 `.dat` 文件。其他难度的文件会在首次游戏并记录分数后自动生成。
-
-若想手动初始化，可以创建一个空的有效序列化文件，或直接运行游戏并打一局。
+游戏首次运行时 `data/rank/` 目录不存在。`PlayRecordDaoImpl` 在写入时会自动调用 `dir.mkdirs()` 创建目录，无需手动创建。
 
 ### 14.4 游戏卡顿/性能问题
 
 **可能原因**：
+- Boss 登场音乐切换卡顿：v1.6 已修复（改用 Clip 预加载，零阻塞）
 - 图片分辨率过高（建议背景图 ≤ 512×768，飞机/道具图 ≤ 64×64）
 - 敌机数量过多（某些极端情况可能大量产生子弹和敌机）
 - 音频文件编码不兼容（建议使用 16-bit PCM WAV）
@@ -854,18 +866,17 @@ this.enemySpawnCycle = 10; // 数值越小，敌机生成越快
 
 | 快捷键 | 功能 |
 |--------|------|
-| 鼠标拖拽 | 移动英雄机 |
-| 窗口关闭按钮 | 退出游戏 |
-
-游戏暂时不支持键盘操作。
+| 鼠标拖拽 | 移动英雄机（单人/双人玩家2） |
+| WASD 键盘 | 移动英雄机（双人玩家1） |
+| ESC | 暂停/继续游戏 |
 
 ### B. 各包职责速查
 
 | 包路径 | 职责 |
 |--------|------|
 | `cn.edu.scnu.aircraft` | 飞机类（英雄机 + 所有敌机 + 工厂） |
-| `cn.edu.scnu.application` | 应用入口、主菜单、图片管理、排行榜窗口 |
-| `cn.edu.scnu.application.game` | 各难度游戏逻辑实现 |
+| `cn.edu.scnu.application` | 应用入口、主菜单、图片管理、排行榜、模式控制 |
+| `cn.edu.scnu.application.game` | 各难度游戏逻辑实现 + 教学关 |
 | `cn.edu.scnu.basic` | 飞行对象基类（坐标/碰撞/图片懒加载） |
 | `cn.edu.scnu.bullet` | 子弹类 |
 | `cn.edu.scnu.shoot` | 射击策略（策略模式） |
@@ -879,10 +890,23 @@ this.enemySpawnCycle = 10; // 数值越小，敌机生成越快
 
 | 项目 | 版本 |
 |------|------|
-| 项目版本 | v1.5 |
+| 项目版本 | **v1.7** |
 | JDK | 11+ |
-| 最后更新 | 2026-07-14 |
-| 作者 | 黄彪骐 岳孝彬 丁俊哲|
+| 最后更新 | 2026-07-15 |
+| 作者 | 黄彪骐、岳孝彬、丁俊哲 |
+
+### D. 更新日志
+
+| 版本 | 内容 |
+|------|------|
+| v1.7 | 优化漏敌逻辑（不同敌机惩罚不同）；UI 界面美观（标题居中、按钮统一样式、排行榜布局对齐）；导出排行榜为 XLS；BGM 零卡顿切换；暂停时禁止鼠标移动；音效预加载优化；新增游戏说明滚动条；Elite/Veteran/Ace 改为 2 发击毁 |
+| v1.6 | 整合 ding/111 分支：CardLayout 卡片式 UI、单人/双人模式、教学关、ESC 暂停、键盘控制（WASD）、排行榜模式分离、排行榜导出 |
+| v1.5 | fix bug: Random 的种子更改，不同的起点 |
+| v1.4 | 完善系统：增加道具系统（火力、超级火力、炸弹、冰冻、回血）、Boss 战、双人模式、排行榜数据库、音效系统、用户界面优化 |
+| v1.3 | 增加四种敌机类型（Boss、Elite、Mob、Veteran） |
+| v1.2 | 增加 5 种难度模式 |
+| v1.1 | 完善游戏框架：增加游戏抽象父类、敌机管理、碰撞检测、射击策略 |
+| v1.0 | 基本框架：Mob、Elite 类，定时器和控制 |
 
 ---
 

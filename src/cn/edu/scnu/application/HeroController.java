@@ -26,6 +26,10 @@ public class HeroController {
         mouseAdapter = new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                // 暂停时禁止移动飞机
+                if (game.isPaused()) {
+                    return;
+                }
                 super.mouseDragged(e);
                 int x = e.getX();
                 int y = e.getY();
