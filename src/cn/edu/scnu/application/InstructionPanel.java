@@ -3,10 +3,31 @@ package cn.edu.scnu.application;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 游戏说明面板。
+ * <p>
+ * 此类继承自 {@link JPanel}，负责显示游戏的详细说明页面。
+ * 面板中包含一个滚动显示的 HTML 格式说明内容（包括游戏目标、操作方式、规则、
+ * 敌机类型、道具说明等），以及一个返回主菜单的按钮。
+ * </p>
+ *
+ * @author hahaha
+ */
 public class InstructionPanel extends JPanel {
     private final CardLayout cardLayout;
     private final JPanel parent;
 
+    /**
+     * 构造一个游戏说明面板。
+     * <p>
+     * 初始化面板布局为 {@link BorderLayout}，背景设为白色。
+     * 创建并添加一个包含 HTML 说明内容的只读文本编辑区（带滚动面板），
+     * 并在底部添加一个"返回主菜单"按钮。
+     * </p>
+     *
+     * @param cardLayout 用于切换页面的卡片布局管理器
+     * @param parent     父面板，点击返回按钮时通过卡片布局切换回主菜单
+     */
     public InstructionPanel(CardLayout cardLayout, JPanel parent) {
         this.cardLayout = cardLayout;
         this.parent = parent;
@@ -22,6 +43,8 @@ public class InstructionPanel extends JPanel {
         textPane.setMargin(new Insets(15, 25, 15, 25));
         JScrollPane scrollPane = new JScrollPane(textPane);
         scrollPane.setBorder(null);
+        // 每次打开时滚动到顶部
+        SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(new Point(0, 0)));
         add(scrollPane, BorderLayout.CENTER);
 
         // 返回按钮
@@ -35,6 +58,15 @@ public class InstructionPanel extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * 获取游戏说明的 HTML 字符串。
+     * <p>
+     * 返回一个格式化的 HTML 页面字符串，包含游戏目标、操作方式、游戏规则、
+     * 漏敌惩罚、敌机类型、教学模式、难度说明以及道具说明等内容。
+     * </p>
+     *
+     * @return 包含完整游戏说明内容的 HTML 字符串
+     */
     private String getInstructionHtml() {
         return "<html><body style='font-family: 微软雅黑; font-size:14px; margin:0;'>" +
                 "<h2 style='text-align:center;font-size:18px;margin:5px 0;'>游戏说明</h2>" +

@@ -5,7 +5,7 @@ import cn.edu.scnu.application.game.AbstractGame;
 import cn.edu.scnu.prop.AbstractProp;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class HpSupply extends AbstractProp {
     private int recoverHp = 20; // 恢复的生命值

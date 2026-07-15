@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class PlayRecordDaoImpl implements PlayRecordDao {
     // 位于内存中的游戏记录表

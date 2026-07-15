@@ -9,7 +9,7 @@ import cn.edu.scnu.bullet.HeroBullet;
 
 /**
  * 散射模式
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class ScatterShoot implements ShootStrategy {
     private int bulletNum = 3; // 子弹数量

@@ -8,7 +8,7 @@ import cn.edu.scnu.bullet.EnemyBullet;
 import cn.edu.scnu.bullet.HeroBullet;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class RingShoot implements ShootStrategy {
 

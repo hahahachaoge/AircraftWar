@@ -11,7 +11,7 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class MusicManager {
 

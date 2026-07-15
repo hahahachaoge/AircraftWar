@@ -5,7 +5,7 @@ import cn.edu.scnu.shoot.ShootStrategy;
 import cn.edu.scnu.shoot.StraightShoot;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class PropEffectTimer implements Runnable {
     private int durationSeconds;

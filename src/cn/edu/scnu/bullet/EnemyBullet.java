@@ -12,7 +12,7 @@ import cn.edu.scnu.prop.observer.ObserverManager;
 /**
  * 敌机子弹
  * 
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class EnemyBullet extends BaseBullet implements EnemyObserver {
     private int originalSpeedX;

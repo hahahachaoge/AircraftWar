@@ -5,7 +5,7 @@ import cn.edu.scnu.basic.AbstractFlyingObject;
 
 /**
  * 子弹基类
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public abstract class BaseBullet extends AbstractFlyingObject {
 

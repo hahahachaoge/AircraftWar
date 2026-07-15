@@ -7,7 +7,7 @@ import cn.edu.scnu.prop.PropEffectTimer;
 import cn.edu.scnu.shoot.RingShoot;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class FirePlusSupply extends AbstractProp {
 

@@ -5,7 +5,7 @@ import java.util.List;
 import cn.edu.scnu.bullet.BaseBullet;
 /***
  * 射击策略模式接口
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public interface ShootStrategy {
  /**

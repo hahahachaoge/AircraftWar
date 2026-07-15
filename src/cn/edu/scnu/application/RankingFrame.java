@@ -13,7 +13,12 @@ import java.util.List;
 import cn.edu.scnu.rank.PlayRecordDao;
 
 /**
- * @author 黄彪骐
+ * 排行榜窗口类，继承自 JFrame。
+ * 用于显示、管理和删除指定难度下的玩家游戏记录。
+ * 提供包含排名、玩家名、分数、模式和记录时间的表格视图，
+ * 支持删除记录以及返回主菜单的功能。
+ *
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class RankingFrame extends JFrame {
 
@@ -22,6 +27,13 @@ public class RankingFrame extends JFrame {
     private JTable rankingTable;
     private DefaultTableModel tableModel;
 
+    /**
+     * 构造一个指定难度和持久化数据源的排行榜窗口。
+     * 初始化界面、加载排行榜数据，并居中显示窗口。
+     *
+     * @param difficulty 要显示的难度等级
+     * @param recordDao  游戏记录的数据访问对象，用于读取和删除记录
+     */
     public RankingFrame(Difficulty difficulty, PlayRecordDao recordDao) {
         this.difficulty = difficulty;
         this.recordDao = recordDao;
@@ -38,7 +50,10 @@ public class RankingFrame extends JFrame {
         setVisible(true);
     }
 
-    // 初始化界面的方法
+    /**
+     * 初始化窗口界面。
+     * 使用 BorderLayout 布局，依次添加标题面板、表格面板和按钮面板。
+     */
     private void initUI() {
         // 设置主容器的布局管理器为BorderLayout
         setLayout(new BorderLayout(10, 10));
@@ -58,7 +73,12 @@ public class RankingFrame extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    // 创建标题面板
+    /**
+     * 创建标题面板。
+     * 显示居中的难度标题文字，带有蓝色加粗字体。
+     *
+     * @return 包含标题标签的面板
+     */
     private JPanel createTitlePanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -73,7 +93,13 @@ public class RankingFrame extends JFrame {
         return panel;
     }
 
-    // 创建表格面板
+    /**
+     * 创建表格面板。
+     * 包含一个不可编辑的 JTable，列分别为：排名、玩家名、分数、模式、记录时间。
+     * 设置列宽、行高、字体和选择模式，并将表格置于带标题边框的滚动面板中。
+     *
+     * @return 包含排行榜表格的面板
+     */
     private JPanel createTablePanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -111,7 +137,13 @@ public class RankingFrame extends JFrame {
         return panel;
     }
 
-    // 创建按钮面板
+    /**
+     * 创建按钮面板。
+     * 包含"关闭窗口"按钮（关闭排行榜并返回主菜单）和
+     * "删除记录"按钮（删除选中行对应的记录并刷新数据）。
+     *
+     * @return 包含操作按钮的面板
+     */
     private JPanel createButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
@@ -151,6 +183,11 @@ public class RankingFrame extends JFrame {
         return panel;
     }
 
+    /**
+     * 弹出删除确认对话框，询问用户是否确认删除选中的记录。
+     *
+     * @return true 如果用户点击"是"，否则返回 false
+     */
     private boolean confirmDelete() {
         int option = JOptionPane.showConfirmDialog(
                 this, // 父组件
@@ -163,6 +200,12 @@ public class RankingFrame extends JFrame {
     }
 
 
+    /**
+     * 加载排行榜数据并刷新表格显示。
+     * 从记录数据源获取指定难度的所有记录，逐行填充到表格模型中。
+     * 若数据访问对象为空则打印提示信息并返回；
+     * 若没有记录则显示"暂无记录"占位行。
+     */
     private void loadRankingData() {
         tableModel.setRowCount(0);
 

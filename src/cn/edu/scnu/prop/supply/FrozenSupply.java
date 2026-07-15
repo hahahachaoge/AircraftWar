@@ -8,7 +8,7 @@ import cn.edu.scnu.prop.observer.ObserverManager;
 
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class FrozenSupply extends AbstractProp {
     public FrozenSupply(int locationX, int locationY, int speedX, int speedY) {

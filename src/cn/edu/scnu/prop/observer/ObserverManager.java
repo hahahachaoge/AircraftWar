@@ -6,7 +6,7 @@ import java.util.List;
 import cn.edu.scnu.prop.PropType;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class ObserverManager {
     private static ObserverManager instance;

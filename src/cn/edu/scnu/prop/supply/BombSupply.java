@@ -20,7 +20,7 @@ import cn.edu.scnu.prop.observer.ObserverManager;
     王牌敌机 掉血
     Boss敌机 不受影响
     敌机子弹 消失
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class BombSupply extends AbstractProp {
 

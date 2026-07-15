@@ -11,8 +11,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * 排行榜显示面板（难度独立界面）
- * 支持从主菜单和游戏结束两种场景进入。
+ * 排行榜显示面板（难度独立界面）。
+ * <p>
+ * 该面板用于展示指定难度下的玩家排行榜数据，支持从主菜单和游戏结束两种场景进入。
+ * 主要功能包括：以表格形式展示排名、玩家名、分数、游戏模式和记录时间；
+ * 支持删除选中的排行榜记录；支持将排行榜导出为 XLS 文件（HTML 表格格式）；
+ * 提供"返回难度选择"、"返回主菜单"等导航按钮。
+ * </p>
  */
 public class RankingShowPanel extends JPanel {
     private final CardLayout cardLayout;
@@ -23,7 +28,12 @@ public class RankingShowPanel extends JPanel {
     private MainMenuFrame mainMenuFrame;   // 用于恢复标题栏（游戏结束场景）
 
     /**
-     * 构造方法（不带 MainMenuFrame 引用，用于普通菜单进入）
+     * 构造方法（不带 MainMenuFrame 引用，用于普通菜单进入）。
+     *
+     * @param cardLayout 父容器的卡片布局管理器
+     * @param parent     父容器面板
+     * @param difficulty 要显示排行榜的难度
+     * @param recordDao  排行榜数据访问对象
      */
     public RankingShowPanel(CardLayout cardLayout, JPanel parent,
                             Difficulty difficulty, PlayRecordDaoImpl recordDao) {
@@ -31,7 +41,16 @@ public class RankingShowPanel extends JPanel {
     }
 
     /**
-     * 构造方法（带 MainMenuFrame 引用，用于游戏结束场景）
+     * 构造方法（带 MainMenuFrame 引用，用于游戏结束场景）。
+     * <p>
+     * 在游戏结束后显示排行榜时，需要持有 MainMenuFrame 引用来恢复标题栏控件的显示状态。
+     * </p>
+     *
+     * @param cardLayout     父容器的卡片布局管理器
+     * @param parent         父容器面板
+     * @param difficulty     要显示排行榜的难度
+     * @param recordDao      排行榜数据访问对象
+     * @param mainMenuFrame  主菜单窗口引用，用于恢复标题栏（可为 null）
      */
     public RankingShowPanel(CardLayout cardLayout, JPanel parent,
                             Difficulty difficulty, PlayRecordDaoImpl recordDao,
@@ -46,6 +65,18 @@ public class RankingShowPanel extends JPanel {
         loadData();
     }
 
+    /**
+     * 初始化用户界面。
+     * <p>
+     * 创建并布局排行榜面板的所有 UI 组件，包括：
+     * <ul>
+     *   <li>顶部标题标签，显示当前难度名称</li>
+     *   <li>中央排行榜表格，包含排名、玩家名、分数、模式、记录时间五列</li>
+     *   <li>底部按钮面板，包含"返回难度选择"、"删除选中记录"、"返回主菜单"和"导出排行"四个按钮</li>
+     * </ul>
+     * 并为各个按钮注册事件监听器。
+     * </p>
+     */
     private void initUI() {
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
@@ -148,6 +179,14 @@ public class RankingShowPanel extends JPanel {
         add(southPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * 加载排行榜数据并填充表格。
+     * <p>
+     * 从数据库（通过 recordDao）获取指定难度的所有游戏记录，
+     * 依次添加到表格模型中。如果当前难度下没有任何记录，
+     * 则在表格中显示一行"暂无记录"的提示信息。
+     * </p>
+     */
     private void loadData() {
         tableModel.setRowCount(0);
 
@@ -170,7 +209,14 @@ public class RankingShowPanel extends JPanel {
         }
     }
 
-    // 导出排行榜为 XLS 文件（HTML 表格格式，Excel 可直接打开，无需第三方依赖）
+    /**
+     * 导出当前难度的排行榜为 XLS 文件。
+     * <p>
+     * 使用 HTML 表格格式生成文件，Excel 可直接打开，无需第三方依赖库。
+     * 文件编码为 GBK，文件名为"{难度中文名}模式排行榜.xls"。
+     * 导出成功或失败时均会弹出提示对话框告知用户。
+     * </p>
+     */
     private void exportToExcel() {
         String diffCn = getDifficultyChinese(difficulty);
         String fileName = diffCn + "模式排行榜.xls";
@@ -202,6 +248,12 @@ public class RankingShowPanel extends JPanel {
         }
     }
 
+    /**
+     * 将难度枚举值转换为对应的中文名称。
+     *
+     * @param diff 难度枚举值
+     * @return 对应的中文名称字符串（简单 / 普通 / 困难 / 专家 / 地狱）
+     */
     private String getDifficultyChinese(Difficulty diff) {
         switch (diff) {
             case BEGINNER:    return "简单";

@@ -11,7 +11,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 /**
- * 主菜单窗口（支持常规进入和游戏结束进入）
+ * 主菜单窗口，是整个游戏的入口界面。
+ * <p>
+ * 支持两种进入方式：一种是常规启动进入主菜单，玩家可自由切换单/双人模式、选择难度开始游戏、
+ * 查看游戏说明、查看排行榜或退出程序；另一种是游戏结束后进入，此时不显示模式选择器和教学按钮，
+ * 而是弹出名字输入面板供玩家录入得分记录，随后自动跳转到对应难度的排行榜。
+ * </p>
+ * <p>
+ * 窗口采用 {@link CardLayout} 管理多张卡片，包括主菜单卡片、游戏说明卡片、排行榜选择卡片、
+ * 名字输入卡片以及各难度的排行榜展示卡片。
+ * </p>
+ *
+ * @see CardLayout
+ * @see InstructionPanel
+ * @see RankingSelectPanel
+ * @see NameInputPanel
  */
 public class MainMenuFrame extends JFrame {
     private JPanel mainPanel;
@@ -26,7 +40,13 @@ public class MainMenuFrame extends JFrame {
     private InstructionPanel instructionPanel;
     private RankingSelectPanel rankingSelectPanel;
 
-    // ---------- 常规构造（主菜单入口） ----------
+    /**
+     * 常规构造方法，用于从启动入口进入主菜单。
+     * <p>
+     * 构建标题栏（含模式选择器、教学按钮），初始化卡片布局，
+     * 组装窗口并显示。
+     * </p>
+     */
     public MainMenuFrame() {
         buildTitlePanel();
         initCardLayout();
@@ -34,7 +54,17 @@ public class MainMenuFrame extends JFrame {
         setVisible(true);
     }
 
-    // ---------- 游戏结束构造（不显示模式选择器和教学按钮） ----------
+    /**
+     * 游戏结束后的构造方法，用于从游戏窗口返回主菜单并录入成绩。
+     * <p>
+     * 隐藏模式选择器和教学按钮，添加名字输入面板 {@link NameInputPanel}，
+     * 初始化卡片布局后直接切换到名字输入卡片。
+     * </p>
+     *
+     * @param difficulty 游戏难度，用于保存和查询排行榜记录
+     * @param score      玩家本局得分
+     * @param mode       游戏模式（单人/双人），用于保存记录
+     */
     public MainMenuFrame(Difficulty difficulty, int score, GameMode mode) {
         buildTitlePanel();
         // 隐藏不需要的控件
@@ -52,7 +82,12 @@ public class MainMenuFrame extends JFrame {
         cardLayout.show(contentCards, "nameInput");
     }
 
-    // ---------- 标题栏构建 ----------
+    /**
+     * 构建标题栏，包含模式选择标签、模式下拉框、游戏标题以及教学按钮。
+     * <p>
+     * 标题栏使用绝对定位（null布局），固定在窗口上方。
+     * </p>
+     */
     private void buildTitlePanel() {
         titlePanel = new JPanel(null);
         titlePanel.setPreferredSize(new Dimension(1370, 60));
@@ -80,7 +115,17 @@ public class MainMenuFrame extends JFrame {
         titlePanel.add(tutorialButton);
     }
 
-    // ---------- 卡片布局 ----------
+    /**
+     * 初始化卡片布局，创建内容卡片容器并添加所有初始卡片。
+     * <p>
+     * 初始包含三张卡片：
+     * <ul>
+     *   <li>"main" —— 主菜单卡片（含标题栏、难度选择、底部功能按钮）</li>
+     *   <li>"instruction" —— 游戏说明卡片</li>
+     *   <li>"rankingSelect" —— 排行榜难度选择卡片</li>
+     * </ul>
+     * </p>
+     */
     private void initCardLayout() {
         cardLayout = new CardLayout();
         contentCards = new JPanel(cardLayout);
@@ -99,6 +144,16 @@ public class MainMenuFrame extends JFrame {
         contentCards.add(rankingSelectPanel, "rankingSelect");
     }
 
+    /**
+     * 构建主菜单卡片，包含标题栏、五个难度选择按钮以及底部功能按钮区域。
+     * <p>
+     * 难度选择区域使用 {@link GridLayout} 展示五个带背景图片的 {@link ModePanel}，
+     * 分别对应简单、普通、困难、专家、地狱五个难度。
+     * 底部提供"游戏说明"、"排行榜"、"退出游戏"三个功能按钮。
+     * </p>
+     *
+     * @return 组装完成的主菜单卡片面板
+     */
     private JPanel buildMainMenuCard() {
         JPanel card = new JPanel(new BorderLayout(10, 10));
         card.setBackground(Color.WHITE);
@@ -164,7 +219,9 @@ public class MainMenuFrame extends JFrame {
         return card;
     }
 
-    // ---------- 窗口组装 ----------
+    /**
+     * 组装窗口，将内容卡片放入主面板，设置窗口标题、尺寸、关闭行为、居中位置及不可调整大小。
+     */
     private void assembleFrame() {
         mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
@@ -178,17 +235,33 @@ public class MainMenuFrame extends JFrame {
         setResizable(false);
     }
 
-    // ---------- 工具方法 ----------
+    /**
+     * 获取当前选中的游戏模式。
+     *
+     * @return {@link GameMode#SINGLE} 表示单人模式，{@link GameMode#DOUBLE} 表示双人模式
+     */
     private GameMode getCurrentGameMode() {
         int idx = modeComboBox.getSelectedIndex();
         return (idx == 0) ? GameMode.SINGLE : GameMode.DOUBLE;
     }
 
+    /**
+     * 开始游戏：关闭当前菜单窗口，在事件调度线程中创建并启动游戏窗口。
+     *
+     * @param difficulty 游戏难度
+     * @param mode       游戏模式（单人/双人）
+     */
     private void startGame(Difficulty difficulty, GameMode mode) {
         this.dispose();
         SwingUtilities.invokeLater(() -> createGameWindow(difficulty, mode));
     }
 
+    /**
+     * 启动教学关：关闭当前菜单窗口，在事件调度线程中创建教学游戏窗口并开始游戏循环。
+     * <p>
+     * 教学关使用 {@link TutorialGame}，根据当前选中的模式显示单人或双人教学。
+     * </p>
+     */
     private void startTutorial() {
         GameMode mode = getCurrentGameMode();
         this.dispose();
@@ -204,6 +277,23 @@ public class MainMenuFrame extends JFrame {
         });
     }
 
+    /**
+     * 创建游戏窗口并根据难度实例化对应的游戏对象。
+     * <p>
+     * 根据 {@code difficulty} 参数创建对应难度的游戏子类实例：
+     * <ul>
+     *   <li>{@link BeginningGame} —— 简单模式</li>
+     *   <li>{@link BasicGame} —— 普通模式</li>
+     *   <li>{@link IntermendtateGame} —— 困难模式</li>
+     *   <li>{@link AdvancedGame} —— 专家模式</li>
+     *   <li>{@link ExpertGame} —— 地狱模式</li>
+     * </ul>
+     * 窗口宽度取 {@link Main#WINDOW_WIDTH}，垂直居中靠上放置。
+     * </p>
+     *
+     * @param difficulty 游戏难度，决定实例化的游戏子类
+     * @param mode       游戏模式（单人/双人）
+     */
     private void createGameWindow(Difficulty difficulty, GameMode mode) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         JFrame gameFrame = new JFrame("飞机大战 - " + difficulty);
@@ -228,13 +318,26 @@ public class MainMenuFrame extends JFrame {
         game.action();
     }
 
-    // ---------- 恢复标题栏（从游戏结束返回时调用） ----------
+    /**
+     * 恢复标题栏中模式选择器和教学按钮的可见性。
+     * <p>
+     * 当从游戏结束状态返回主菜单时，调用此方法将之前隐藏的控件重新显示。
+     * </p>
+     */
     public void restoreTitleBar() {
         modeComboBox.setVisible(true);
         tutorialButton.setVisible(true);
     }
 
-    // ---------- 跳转到指定难度排行榜（游戏结束时调用） ----------
+    /**
+     * 跳转到指定难度的排行榜展示卡片。
+     * <p>
+     * 从文件加载该难度的历史记录数据，创建 {@link RankingShowPanel} 并动态添加到卡片容器中，
+     * 然后切换显示。
+     * </p>
+     *
+     * @param difficulty 要展示的排行榜对应的游戏难度
+     */
     public void showRankingForDifficulty(Difficulty difficulty) {
         PlayRecordDaoImpl recordDao = new PlayRecordDaoImpl(new ArrayList<>());
         recordDao.readFromFile(difficulty);   // 加载最新文件数据
@@ -245,7 +348,25 @@ public class MainMenuFrame extends JFrame {
     }
 
     // ==================== 内部类：名字输入面板 ====================
+
+    /**
+     * 游戏结束后的名字输入面板。
+     * <p>
+     * 显示"游戏结束"提示、最终得分，并提供一个文本输入框让玩家输入名字。
+     * 点击"确定"按钮后将玩家记录保存到文件，然后自动跳转到对应难度的排行榜。
+     * 若输入为空，则默认保存为"匿名玩家"。
+     * </p>
+     */
     class NameInputPanel extends JPanel {
+
+        /**
+         * 构造名字输入面板。
+         *
+         * @param difficulty 游戏难度，用于保存和查询排行榜
+         * @param score      玩家最终得分
+         * @param mode       游戏模式（单人/双人）
+         * @param mainMenu   主菜单窗口引用，用于完成后的页面跳转和标题栏恢复
+         */
         public NameInputPanel(Difficulty difficulty, int score, GameMode mode, MainMenuFrame mainMenu) {
             setLayout(new GridBagLayout());
             setBackground(Color.WHITE);

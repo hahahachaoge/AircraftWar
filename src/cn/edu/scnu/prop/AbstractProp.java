@@ -6,7 +6,7 @@ import cn.edu.scnu.application.game.AbstractGame;
 import cn.edu.scnu.basic.AbstractFlyingObject;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public abstract class AbstractProp extends AbstractFlyingObject {
 

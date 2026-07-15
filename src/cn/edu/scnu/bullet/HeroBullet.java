@@ -2,7 +2,7 @@ package cn.edu.scnu.bullet;
 
 /**
  * 英雄机子弹
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class HeroBullet extends BaseBullet {
 

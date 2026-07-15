@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Timer;
 
 /**
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 @SuppressWarnings("all")
 public abstract class AbstractGame extends JPanel {

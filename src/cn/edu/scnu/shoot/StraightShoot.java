@@ -9,7 +9,7 @@ import cn.edu.scnu.bullet.HeroBullet;
 
 /**
  * 直射模式：通过bulletNum来实现单排直射，双排直射。。。
- * @author 黄彪骐
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class StraightShoot implements ShootStrategy {
 

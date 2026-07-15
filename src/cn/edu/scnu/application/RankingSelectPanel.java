@@ -7,12 +7,34 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * 排行榜难度选择页，布局与主菜单卡片完全一致
+ * 排行榜难度选择面板。
+ * <p>
+ * 该面板用于让用户选择要查看哪个难度等级的排行榜记录。
+ * 界面布局与主菜单卡片完全一致，包含五个难度模式展示卡片（简单模式、普通模式、
+ * 困难模式、专家模式、地狱模式）以及一个返回主菜单按钮。
+ * 用户点击任意难度卡片后，程序会读取对应难度的单人/双人游戏记录，
+ * 并跳转至排行榜展示面板（{@link RankingShowPanel}）进行查看。
+ * </p>
+ *
+ * @author
  */
 public class RankingSelectPanel extends JPanel {
     private final CardLayout cardLayout;
     private final JPanel parent;
 
+    /**
+     * 构造一个排行榜难度选择面板。
+     * <p>
+     * 初始化面板的布局为 BorderLayout，设置背景为白色。
+     * 顶部区域放置居中标题"请选择要查看的难度"；中央区域使用 GridLayout 排列
+     * 五个难度模式卡片，每个卡片绑定点击事件——点击后从文件中读取该难度的游戏记录，
+     * 并将父容器切换到 {@link RankingShowPanel} 展示排行数据；
+     * 底部区域放置一个"返回主菜单"按钮，点击后返回主页面。
+     * </p>
+     *
+     * @param cardLayout 父容器使用的 CardLayout 布局管理器，用于面板切换
+     * @param parent     父容器 JPanel，排行榜展示面板将被添加到此容器中
+     */
     public RankingSelectPanel(CardLayout cardLayout, JPanel parent) {
         this.cardLayout = cardLayout;
         this.parent = parent;
