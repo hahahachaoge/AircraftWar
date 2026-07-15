@@ -1,0 +1,104 @@
+@startuml "简单工厂模式：飞机大战道具创建"
+title 简单工厂模式：飞机大战道具创建
+left to right direction
+
+' 1. 简单工厂类
+class PropFactory {
+  +{static} createProp(PropType type, int x, int y): AbstractProp
+  --
+  根据type参数创建对应的具体道具对象
+  内部包含switch-case或if-else逻辑
+}
+
+' 2. 抽象产品类
+abstract class AbstractProp {
+  +AbstractProp(int locationX, int locationY, int speedX, int speedY) 
+  +{abstract} activate(HeroAircraft heroAircraft, Game game): void
+  +forward(): void
+}
+
+' 3. 具体产品类
+class HpSupply {
+  -recoverHp: int = 20
+  +activate(HeroAircraft heroAircraft, Game game): void
+  +forward(): void
+  --
+  加血道具
+}
+
+class FireSupply {
+  +activate(HeroAircraft heroAircraft, Game game): void
+  +forward(): void
+  --
+  火力道具
+}
+
+class FirePlusSupply {
+  +activate(HeroAircraft heroAircraft, Game game): void
+  +forward(): void
+  --
+  超级火力道具
+}
+
+class BombSupply {
+  +activate(HeroAircraft heroAircraft, Game game): void
+  +forward(): void
+  --
+  炸弹道具
+}
+
+class FrozenSupply {
+  +activate(HeroAircraft heroAircraft, Game game): void
+  +forward(): void
+  --
+  冰冻道具
+}
+
+' 继承关系
+AbstractProp <|-- HpSupply
+AbstractProp <|-- FireSupply
+AbstractProp <|-- FirePlusSupply
+AbstractProp <|-- BombSupply
+AbstractProp <|-- FrozenSupply
+
+' 工厂创建产品的关系
+PropFactory ..> AbstractProp : 创建
+note on link
+  createProp 方法内部：
+        switch (type) {
+            case HP:
+                return new HpSupply(x, y, 0, 3);
+            case FIRE:
+                return new FireSupply(x, y, 0, 3);
+            case FIRE_PLUS:
+                return new FirePlusSupply(x, y, 0, 3);
+            case BOMB:
+                return new BombSupply(x, y, 0, 3);
+            case FROZEN:
+                return new FrozenSupply(x, y, 0, 3);
+            default:
+                throw new IllegalArgumentException("Undefined : " + type);
+        }
+end note
+
+' 道具类型枚举
+enum PropType {
+  HP
+  FIRE
+  FIRE_PLUS
+  BOMB
+  FROZEN
+}
+
+PropFactory ..> PropType : 使用
+
+' 说明注释
+note right of PropFactory
+  <b>简单工厂模式特点：</b>
+  1. 一个工厂类负责所有产品创建
+  2. 通过参数区分创建哪种产品
+  3. 将创建逻辑集中在一个类中
+  4. 新增产品需要修改工厂类代码
+end note
+
+@enduml

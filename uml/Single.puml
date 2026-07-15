@@ -1,0 +1,21 @@
+@startuml "飞机大战英雄机单例模式结构图"
+title 飞机大战英雄机单例模式结构图
+left to right direction
+
+' 单例模式在HeroAircraft中的应用
+class HeroAircraft {
+    - shootNum:int
+    - instance:HeroAircraft
+    + HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + {static} getInstance(int locationX, int locationY, int speedX, int speedY, int hp):HeroAircraft
+    + {static} getInstance():HeroAircraft
+    + forward():void
+}
+
+class Game{
+    - heroAircraft: HeroAircraft
+    + Game()
+}
+Game --> HeroAircraft : 调用 getInstance(int locationX, int locationY, int speedX, int speedY, int hp):HeroAircraft
+
+@enduml

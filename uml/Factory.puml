@@ -1,0 +1,157 @@
+@startuml "工厂方法模式：飞机大战敌机创建场景"
+title 工厂方法模式：飞机大战敌机创建场景
+left to right direction
+
+' 1. 抽象产品类
+abstract class AbstractAircraft{
+  # maxHp:int
+  # hp:int
+  + AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+  + decreaseHp(int decrease):void
+  + getHp():int
+  + {abstract} shoot():List<BaseBullet>
+}
+
+' 2. 具体产品类
+class MobEnemy {
+  + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+  + forward():void
+  + shoot():List<BaseBullet>
+  --
+  普通敌机
+  特点：直线移动，不射击
+}
+
+class EliteEnemy {
+  + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+  + forward():void
+  + shoot():List<BaseBullet>
+  --
+  精英敌机
+  特点：直射弹道
+}
+
+class VeteranEnemy {
+  + VeteranEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+  + forward():void
+  + shoot():List<BaseBullet>
+  --
+  精锐敌机
+  特点：双排直射弹道
+}
+
+class AceEnemy {
+  + AceEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+  + forward():void
+  + shoot():List<BaseBullet>
+  --
+  王牌敌机
+  特点：扇形散射弹道
+}
+
+class BossEnemy {
+  + BossEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+  + forward():void
+  + shoot():List<BaseBullet>
+  --
+  Boss敌机
+  特点：环射弹道，左右移动
+}
+
+' 3. 抽象创建者接口
+interface EnemyFactory {
+  +{abstract} createEnemy(int x, int y): AbstractAircraft
+}
+
+' 4. 具体创建者类
+class MobEnemyFactory {
+  +createEnemy(int x, int y): AbstractAircraft
+  --
+  创建普通敌机
+  返回：MobEnemy实例
+}
+
+class EliteEnemyFactory {
+  +createEnemy(int x, int y): AbstractAircraft
+  --
+  创建精英敌机
+  返回：EliteEnemy实例
+}
+
+class VeteranEnemyFactory {
+  +createEnemy(int x, int y): AbstractAircraft
+  --
+  创建精锐敌机
+  返回：VeteranEnemy实例
+}
+
+class AceEnemyFactory {
+  +createEnemy(int x, int y): AbstractAircraft
+  --
+  创建王牌敌机
+  返回：AceEnemy实例
+}
+
+class BossEnemyFactory {
+  +createEnemy(int x, int y): AbstractAircraft
+  --
+  创建Boss敌机
+  返回：BossEnemy实例
+}
+
+' 继承/实现关系
+AbstractAircraft <|-- MobEnemy
+AbstractAircraft <|-- EliteEnemy
+AbstractAircraft <|-- VeteranEnemy
+AbstractAircraft <|-- AceEnemy
+AbstractAircraft <|-- BossEnemy
+
+EnemyFactory <|.. MobEnemyFactory
+EnemyFactory <|.. EliteEnemyFactory
+EnemyFactory <|.. VeteranEnemyFactory
+EnemyFactory <|.. AceEnemyFactory
+EnemyFactory <|.. BossEnemyFactory
+
+' 创建关系
+MobEnemyFactory ..> MobEnemy : 创建
+EliteEnemyFactory ..> EliteEnemy : 创建
+VeteranEnemyFactory ..> VeteranEnemy : 创建
+AceEnemyFactory ..> AceEnemy : 创建
+BossEnemyFactory ..> BossEnemy : 创建
+
+
+' 在游戏中的使用示例
+class Game {
+  -enemyFactories: Map<EnemyType, EnemyFactory>
+  -enemyAircrafts: List<AbstractAircraft>
+  -createRandomEnemy(): void
+  -spawnBossEnemy(): void
+}
+
+Game --> EnemyFactory : 使用
+Game --> AbstractAircraft : 持有
+
+' 枚举类型
+enum EnemyType {
+  MOB
+  ELITE
+  VETERAN
+  ACE
+  BOSS
+}
+
+Game --> EnemyType : 使用
+
+note top of AbstractAircraft
+  <b>产品基类</b>
+  所有敌机的公共基类
+  定义敌机的基本行为
+end note
+
+note top of EnemyFactory
+  <b>工厂接口</b>
+  声明工厂方法 createEnemy()
+  子类决定实例化哪种具体敌机
+end note
+
+@enduml

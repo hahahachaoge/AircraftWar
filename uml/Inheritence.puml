@@ -1,0 +1,149 @@
+@startuml "飞机大战飞行类继承关系"
+'https://plantuml.com/class-diagram
+title 飞机大战飞行类继承关系
+
+left to right direction
+abstract class AbstractFlyingObject{
+    # locationX:int
+    # locationY:int
+    # speedX:int
+    # speedY:int
+    # image:BufferedImage
+    # width:int
+    # height:int
+    # isValid:boolean
+
+    + AbstractFlyingObject(int locationX, int locationY, int speedX, int speedY)
+    + forward():void
+    + crash(AbstractFlyingObject flyingObject):boolean
+    + setLocation(double locationX, double locationY):void
+    + getLocationX():int
+    + getLocationY():int
+    + getSpeedY():int
+    + getImage():BufferedImage
+    + getWidth():int
+    + getHeight():int
+    + notValid():boolean
+    + vanish():void
+}
+abstract class AbstractAircraft
+{
+    # maxHp:int
+    # hp:int
+    + AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + decreaseHp(int decrease):void
+    + getHp():int
+    + {abstract} shoot():List<BaseBullet>
+}
+
+
+class HeroAircraft {
+    - shootNum:int
+    - instance:HeroAircraft
+    + HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + {static} getInstance(int locationX, int locationY, int speedX, int speedY, int hp):HeroAircraft
+    + {static} getInstance():HeroAircraft
+    + forward():void
+}
+
+AbstractAircraft <|-- HeroAircraft
+
+class MobEnemy {
+    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward():void
+    + shoot():List<BaseBullet>
+}
+AbstractAircraft <|-- MobEnemy
+
+class EliteEnemy{
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward():void
+}
+AbstractAircraft <|-- EliteEnemy
+
+class VeteranEnemy{
+    + VeteranEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward():void
+}
+
+AbstractAircraft <|-- VeteranEnemy
+
+class AceEnemy{
+    + AceEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward():void
+}
+
+AbstractAircraft <|-- AceEnemy
+
+class BossEnemy{
+    + BossEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward():void
+}
+
+AbstractAircraft <|-- BossEnemy
+
+abstract class BaseBullet
+{
+    - power:int
+    + BaseBullet(int locationX, int locationY, int speedX, int speedY, int power)
+    + forward():void
+    + getPower():int
+}
+
+class HeroBullet {
+    + HeroBullet(int locationX, int locationY,
+    int speedX, int speedY, int power)
+}
+
+class EnemyBullet {
+    + EnemyBullet(int locationX, int locationY,
+    int speedX, int speedY, int power)
+}
+
+BaseBullet <|-- HeroBullet
+BaseBullet <|-- EnemyBullet
+
+
+abstract class AbstractProp{
+    + AbstractProp(int locationX, int locationY, int speedX, int speedY)
+    + forward():void
+    + {abstract} activate(HeroAircraft heroAircraft, Game game):void
+
+}
+
+class BombSupply{
+    + BombSupply(int locationX, int locationY, int speedX, int speedY)
+    + activate(HeroAircraft heroAircraft, Game game): void
+}
+AbstractProp <|-- BombSupply
+
+class FirePlusSupply{
+    + FirePlusSupply(int locationX, int locationY, int speedX, int speedY)
+    + activate(HeroAircraft heroAircraft, Game game): void
+}
+AbstractProp <|-- FirePlusSupply
+
+class FireSupply{
+    + FireSupply(int locationX, int locationY, int speedX, int speedY)
+    + activate(HeroAircraft heroAircraft, Game game): void
+}
+AbstractProp <|-- FireSupply
+
+class FrozenSupply{
+    + FrozenSupply(int locationX, int locationY, int speedX, int speedY)
+    + activate(HeroAircraft heroAircraft, Game game): void
+}
+AbstractProp <|-- FrozenSupply
+
+class HpSupply{
+    + HpSupply(int locationX, int locationY, int speedX, int speedY)
+    + activate(HeroAircraft heroAircraft, Game game): void
+}
+AbstractProp <|-- HpSupply
+
+
+AbstractFlyingObject <|-- AbstractAircraft
+AbstractFlyingObject <|-- BaseBullet
+AbstractFlyingObject <|-- AbstractProp
+
+@enduml
