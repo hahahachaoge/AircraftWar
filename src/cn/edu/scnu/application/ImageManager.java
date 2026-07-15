@@ -41,7 +41,8 @@ public class ImageManager {
     // 爆炸动画（8帧，每帧 66×66）
     public static BufferedImage[] BANG_FRAMES = new BufferedImage[8];
 
-    public static BufferedImage HERO_IMAGE; // 英雄机图片
+    public static BufferedImage HERO_IMAGE; // 英雄机图片（默认蓝色）
+    public static BufferedImage HERO_PURPLE_IMAGE; // 英雄机图片（紫色，双人玩家2用）
     public static BufferedImage MOB_ENEMY_IMAGE; // 普通敌机图片
     public static BufferedImage ELITE_ENEMY_IMAGE; // 精英敌机图片
     public static BufferedImage VETERAN_ENEMY_IMAGE; // 精锐敌机图片
@@ -63,6 +64,7 @@ public class ImageManager {
         try {
 
             HERO_IMAGE = ImageIO.read(new FileInputStream("src/images/hero.png"));
+            HERO_PURPLE_IMAGE = ImageIO.read(new FileInputStream("src/images/hero_purple.png"));
             MOB_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/mob.png"));
             ELITE_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elite.png"));
             VETERAN_ENEMY_IMAGE = ImageIO.read(new FileInputStream("src/images/elitePlus.png"));

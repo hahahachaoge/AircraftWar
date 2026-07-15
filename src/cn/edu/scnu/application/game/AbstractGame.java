@@ -783,9 +783,12 @@ public abstract class AbstractGame extends JPanel {
         paintImageWithPositionRevised(shakeG, enemyAircrafts);
         paintImageWithPositionRevised(shakeG, props);
 
-        for (HeroAircraft hero : heroes) {
-            shakeG.drawImage(ImageManager.HERO_IMAGE, hero.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2,
-                    hero.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2, null);
+        for (int i = 0; i < heroes.size(); i++) {
+            HeroAircraft hero = heroes.get(i);
+            BufferedImage img = (gameMode == GameMode.DOUBLE && i == 1)
+                    ? ImageManager.HERO_PURPLE_IMAGE : ImageManager.HERO_IMAGE;
+            shakeG.drawImage(img, hero.getLocationX() - img.getWidth() / 2,
+                    hero.getLocationY() - img.getHeight() / 2, null);
         }
 
         // 绘制爆炸动画
