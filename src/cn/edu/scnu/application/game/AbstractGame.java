@@ -113,6 +113,42 @@ public abstract class AbstractGame extends JPanel {
     private Rectangle continueBtnRect, exitBtnRect;
     private static final int BTN_WIDTH = 120, BTN_HEIGHT = 40;
 
+    // 爆炸动画列表：每个元素为 {x, y, frame(0~7), speed(1=正常, 2=慢放)}
+    private final List<int[]> explosions = new ArrayList<>();
+
+    // 屏幕震动
+    private int screenShakeTime = 0;
+    private int screenShakeIntensity = 0;
+    private int shakeCounter = 0;
+
+    public void addExplosion(int x, int y) {
+        explosions.add(new int[]{x, y, 0, 1});
+    }
+
+    /** Boss 死亡大爆炸：慢放 + 多炸点 + 屏幕震动 */
+    public void addBossExplosion(int x, int y) {
+        // 一圈炸点（形成范围爆炸）
+        for (int dx = -50; dx <= 50; dx += 25) {
+            for (int dy = -50; dy <= 50; dy += 25) {
+                explosions.add(new int[]{x + dx + (int)(Math.random() * 15 - 7),
+                        y + dy + (int)(Math.random() * 15 - 7), 0, 2});
+            }
+        }
+        // 中心额外炸点
+        for (int i = 0; i < 5; i++) {
+            explosions.add(new int[]{x + (int)(Math.random() * 40 - 20),
+                    y + (int)(Math.random() * 40 - 20), 0, 2});
+        }
+        // 触发屏幕震动
+        startScreenShake(8, 30);
+    }
+
+    /** 开始屏幕震动 */
+    public void startScreenShake(int intensity, int duration) {
+        screenShakeIntensity = intensity;
+        screenShakeTime = duration;
+    }
+
     public boolean isPaused() {
         return paused;
     }
@@ -281,6 +317,8 @@ public abstract class AbstractGame extends JPanel {
                 propMoveAction();
                 // 撞击检测
                 crashCheckAction();
+                // 爆炸动画帧推进
+                advanceExplosions();
                 // 后处理
                 postProcessAction();
                 // 重绘界面
@@ -490,6 +528,7 @@ public abstract class AbstractGame extends JPanel {
                 for (HeroAircraft hero : heroes) {
                     hero.decreaseHp(hpPenalty);
                 }
+                addExplosion(enemy.getLocationX(), enemy.getLocationY());
                 score = Math.max(0, score - scorePenalty);
                 System.out.println(enemy.getClass().getSimpleName() + "逃离！扣血" + hpPenalty + "点，扣分" + scorePenalty + "分");
                 it.remove();
@@ -567,12 +606,15 @@ public abstract class AbstractGame extends JPanel {
                     bullet.vanish();
                     musicManager.playEffectMusic(MusicType.BULLET_HIT);
                     if (enemyAircraft.notValid()) {
-                        addGameScore(enemyAircraft);
-                        triggerProp(enemyAircraft);
                         if (enemyAircraft instanceof BossEnemy) {
+                            addBossExplosion(enemyAircraft.getLocationX(), enemyAircraft.getLocationY());
                             musicManager.stopBgmMusic(MusicType.BGM_BOSS);
                             musicManager.playBgmMusic(MusicType.BGM, true);
+                        } else {
+                            addExplosion(enemyAircraft.getLocationX(), enemyAircraft.getLocationY());
                         }
+                        addGameScore(enemyAircraft);
+                        triggerProp(enemyAircraft);
                         musicManager.playEffectMusic(MusicType.BOMB_EXPLOSION);
                     }
                 }
@@ -584,6 +626,7 @@ public abstract class AbstractGame extends JPanel {
             if (enemyAircraft.notValid()) continue;
             for (HeroAircraft hero : heroes) {
                 if (enemyAircraft.crash(hero) || hero.crash(enemyAircraft)) {
+                    addExplosion(enemyAircraft.getLocationX(), enemyAircraft.getLocationY());
                     enemyAircraft.vanish();
                     musicManager.playEffectMusic(MusicType.BOMB_EXPLOSION);
                     // 所有英雄机立即死亡，游戏结束
@@ -627,6 +670,24 @@ public abstract class AbstractGame extends JPanel {
 
     protected abstract void triggerProp(AbstractAircraft enemyAircraft);
 
+    // 爆炸动画帧推进 + 屏幕震动衰减
+    private void advanceExplosions() {
+        // 爆炸帧推进
+        Iterator<int[]> it = explosions.iterator();
+        while (it.hasNext()) {
+            int[] e = it.next();
+            e[2] += e[3]; // 按速度推进（1=正常，2=慢放，实际帧增快）
+            if (e[2] >= 8) {
+                it.remove();
+            }
+        }
+        // 屏幕震动衰减
+        if (screenShakeTime > 0) {
+            screenShakeTime--;
+            shakeCounter++;
+        }
+    }
+
     /**
      * ! 后处理部分
      */
@@ -656,6 +717,10 @@ public abstract class AbstractGame extends JPanel {
             }
         }
         if (allDead) {
+            // 所有英雄机位置触发爆炸动画
+            for (HeroAircraft h : heroes) {
+                addExplosion(h.getLocationX(), h.getLocationY());
+            }
             timer.cancel();
             gameOverFlag = true;
             musicManager.playEffectMusic(MusicType.GAME_OVER);
@@ -695,9 +760,17 @@ public abstract class AbstractGame extends JPanel {
     public void paint(Graphics g) {
         super.paint(g);
 
+        // 屏幕震动——创建副本避免 translate 累积
+        Graphics2D shakeG = (Graphics2D) g.create();
+        if (screenShakeTime > 0) {
+            int offsetX = (int)(Math.random() * screenShakeIntensity * 2 - screenShakeIntensity);
+            int offsetY = (int)(Math.random() * screenShakeIntensity * 2 - screenShakeIntensity);
+            shakeG.translate(offsetX, offsetY);
+        }
+
         // 绘制背景,图片滚动
-        g.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop - Main.WINDOW_HEIGHT, null);
-        g.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop, null);
+        shakeG.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop - Main.WINDOW_HEIGHT, null);
+        shakeG.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop, null);
         this.backGroundTop += 1;
         if (this.backGroundTop == Main.WINDOW_HEIGHT) {
             this.backGroundTop = 0;
@@ -705,23 +778,31 @@ public abstract class AbstractGame extends JPanel {
 
         // 先绘制子弹，后绘制飞机
         // 这样子弹显示在飞机的下层
-        paintImageWithPositionRevised(g, enemyBullets);
-        paintImageWithPositionRevised(g, heroBullets);
-        paintImageWithPositionRevised(g, enemyAircrafts);
-        paintImageWithPositionRevised(g, props);
+        paintImageWithPositionRevised(shakeG, enemyBullets);
+        paintImageWithPositionRevised(shakeG, heroBullets);
+        paintImageWithPositionRevised(shakeG, enemyAircrafts);
+        paintImageWithPositionRevised(shakeG, props);
 
         for (HeroAircraft hero : heroes) {
-            g.drawImage(ImageManager.HERO_IMAGE, hero.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2,
+            shakeG.drawImage(ImageManager.HERO_IMAGE, hero.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2,
                     hero.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2, null);
         }
 
+        // 绘制爆炸动画
+        for (int[] e : explosions) {
+            BufferedImage frame = ImageManager.BANG_FRAMES[Math.min(e[2], 7)];
+            shakeG.drawImage(frame, e[0] - frame.getWidth() / 2, e[1] - frame.getHeight() / 2, null);
+        }
+
         // 绘制得分和生命值
-        paintScoreAndLife(g);
+        paintScoreAndLife(shakeG);
 
         // 暂停时绘制半透明遮罩和菜单
         if (paused && !gameOverFlag) {
-            drawPauseMenu(g);
+            drawPauseMenu(shakeG);
         }
+
+        shakeG.dispose();
     }
 
     /**

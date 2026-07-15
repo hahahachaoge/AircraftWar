@@ -38,6 +38,9 @@ public class ImageManager {
 
     public static BufferedImage BACKGROUND_IMAGE; // 背景图片
 
+    // 爆炸动画（8帧，每帧 66×66）
+    public static BufferedImage[] BANG_FRAMES = new BufferedImage[8];
+
     public static BufferedImage HERO_IMAGE; // 英雄机图片
     public static BufferedImage MOB_ENEMY_IMAGE; // 普通敌机图片
     public static BufferedImage ELITE_ENEMY_IMAGE; // 精英敌机图片
@@ -74,7 +77,13 @@ public class ImageManager {
             FIREPLUS_SUPPLY_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_bulletPlus.png"));
             BOMB_SUPPLY_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_bomb.png"));
             FROZEN_SUPPLY_IMAGE = ImageIO.read(new FileInputStream("src/images/prop_freeze.png"));
-            
+
+            // 加载爆炸动画帧（bang.png 528×66，8 帧每帧 66×66）
+            BufferedImage bangSheet = ImageIO.read(new FileInputStream("src/images/bang.png"));
+            for (int i = 0; i < 8; i++) {
+                BANG_FRAMES[i] = bangSheet.getSubimage(i * 66, 0, 66, 66);
+            }
+
             // 建立类名->图片的映射关系
             // 飞机类
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
