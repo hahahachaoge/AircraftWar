@@ -6,6 +6,11 @@ import java.util.List;
 import cn.edu.scnu.prop.PropType;
 
 /**
+ * 观察者管理器，采用单例模式实现。
+ * 负责管理所有 EnemyObserver 的注册、注销与通知分发，
+ * 根据道具类型（BOMB、FROZEN）将观察者分组维护，
+ * 当对应道具被触发时统一通知该组所有观察者。
+ *
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class ObserverManager {

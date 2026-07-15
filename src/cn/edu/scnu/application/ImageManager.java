@@ -166,6 +166,9 @@ public class ImageManager {
      * @return 该对象所属类对应的 {@link BufferedImage} 图片对象；
      *         若 obj 为 {@code null} 或映射表中不存在则返回 {@code null}
      */
+    /** 触发静态代码块加载所有图片，供新框架调用 */
+    public static void loadAllImages() {}
+
     public static BufferedImage get(Object obj) {
         if (obj == null) {
             return null;

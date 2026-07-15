@@ -11,7 +11,7 @@ import java.awt.*;
  * 敌机类型、道具说明等），以及一个返回主菜单的按钮。
  * </p>
  *
- * @author hahaha
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class InstructionPanel extends JPanel {
     private final CardLayout cardLayout;

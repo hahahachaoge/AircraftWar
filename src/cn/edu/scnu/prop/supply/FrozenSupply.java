@@ -8,6 +8,8 @@ import cn.edu.scnu.prop.observer.ObserverManager;
 
 
 /**
+ * 冰冻道具，激活后通知观察者触发冰冻效果，使敌方单位暂时无法行动。
+ *
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class FrozenSupply extends AbstractProp {

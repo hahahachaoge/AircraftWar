@@ -6,8 +6,8 @@ import cn.edu.scnu.prop.supply.FireSupply;
 import cn.edu.scnu.prop.supply.FrozenSupply;
 import cn.edu.scnu.prop.supply.HpSupply;
 
-// 道具简单工厂
 /**
+ * 道具简单工厂，根据道具类型创建对应的道具对象。
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class PropFactory {

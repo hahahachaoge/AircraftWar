@@ -7,6 +7,8 @@ import cn.edu.scnu.prop.PropEffectTimer;
 import cn.edu.scnu.shoot.RingShoot;
 
 /**
+ * 火力增强道具，激活后英雄机切换为环形射击模式，持续若干秒后自动恢复原射击策略。
+ *
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class FirePlusSupply extends AbstractProp {

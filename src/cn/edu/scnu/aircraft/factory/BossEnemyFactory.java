@@ -12,6 +12,8 @@ import cn.edu.scnu.shoot.RingShoot;
  * BOSS 敌机拥有较高的生命值，能够在屏幕上方左右移动并悬浮，
  * 同时使用环形射击策略发射 20 个弹道，是游戏中的高难度敌人。
  * 工厂通过敌人生命值系数和速度系数来动态调整 BOSS 敌机的属性。 </p>
+ *
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class BossEnemyFactory implements EnemyFactory {
     private int hp;

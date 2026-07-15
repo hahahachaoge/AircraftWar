@@ -7,6 +7,9 @@ import cn.edu.scnu.prop.PropEffectTimer;
 import cn.edu.scnu.shoot.ScatterShoot;
 
 /**
+ * 火焰道具，拾取后英雄机将切换为散射射击模式，
+ * 并启动道具效果计时器，在计时结束后恢复原有射击策略。
+ *
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class FireSupply extends AbstractProp{

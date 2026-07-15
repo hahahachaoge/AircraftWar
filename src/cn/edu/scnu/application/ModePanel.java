@@ -10,7 +10,7 @@ import java.awt.event.MouseEvent;
  * 每个 ModePanel 实例加载一张背景图片，在图片底部绘制半透明遮罩和模式名称，
  * 并支持通过 {@link Runnable} 回调响应鼠标点击事件，从而实现不同游戏模式（如街机模式、闯关模式等）的入口。
  *
- * @author 21065
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class ModePanel extends JPanel {
     private Image image;

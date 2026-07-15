@@ -5,6 +5,9 @@ import cn.edu.scnu.application.game.AbstractGame;
 import cn.edu.scnu.prop.AbstractProp;
 
 /**
+ * 生命值补给道具。
+ * 英雄机拾取后恢复一定数值的生命值，但不超过最大生命值上限。
+ *
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class HpSupply extends AbstractProp {

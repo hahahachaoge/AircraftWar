@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * 并跳转至排行榜展示面板（{@link RankingShowPanel}）进行查看。
  * </p>
  *
- * @author
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class RankingSelectPanel extends JPanel {
     private final CardLayout cardLayout;

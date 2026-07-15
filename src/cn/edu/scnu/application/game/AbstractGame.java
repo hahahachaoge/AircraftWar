@@ -594,10 +594,13 @@ public abstract class AbstractGame extends JPanel {
                 break;
             case VETERAN:
                 imageWidth = ImageManager.VETERAN_ENEMY_IMAGE.getWidth();
+                break;
             case ACE:
                 imageWidth = ImageManager.ACE_ENEMY_IMAGE.getWidth();
+                break;
             case BOSS:
                 imageWidth = ImageManager.BOSS_ENEMY_IMAGE.getWidth();
+                break;
             default:
                 break;
         }
@@ -663,8 +666,9 @@ public abstract class AbstractGame extends JPanel {
         if (enemySpawnCounter >= enemySpawnCycle) {
             enemySpawnCounter = 0;
             if (enemyAircrafts.size() < enemyMaxNumber) {
-                AbstractAircraft enemyAircraft = enemyFactories.get(getRandomEnemyType()).createEnemy(
-                        getRandomWidth(getRandomEnemyType()),
+                EnemyType type = getRandomEnemyType();
+                AbstractAircraft enemyAircraft = enemyFactories.get(type).createEnemy(
+                        getRandomWidth(type),
                         getRandomHeight());
                 enemyAircrafts.add(enemyAircraft);
             }

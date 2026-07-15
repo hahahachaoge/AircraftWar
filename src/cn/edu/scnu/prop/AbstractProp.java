@@ -6,6 +6,8 @@ import cn.edu.scnu.application.game.AbstractGame;
 import cn.edu.scnu.basic.AbstractFlyingObject;
 
 /**
+ * 道具的抽象基类，定义了道具的基本行为（向下移动、超出屏幕消失）以及道具效果的抽象接口。
+ *
  * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public abstract class AbstractProp extends AbstractFlyingObject {

@@ -18,6 +18,7 @@ import java.util.List;
  * 支持删除选中的排行榜记录；支持将排行榜导出为 XLS 文件（HTML 表格格式）；
  * 提供"返回难度选择"、"返回主菜单"等导航按钮。
  * </p>
+ * @author 黄彪骐、岳孝彬、丁俊哲
  */
 public class RankingShowPanel extends JPanel {
     private final CardLayout cardLayout;
