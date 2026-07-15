@@ -113,6 +113,10 @@ public abstract class AbstractGame extends JPanel {
     private Rectangle continueBtnRect, exitBtnRect;
     private static final int BTN_WIDTH = 120, BTN_HEIGHT = 40;
 
+    public boolean isPaused() {
+        return paused;
+    }
+
     /**
      * ! 设置参数部分
      */
@@ -271,6 +275,8 @@ public abstract class AbstractGame extends JPanel {
                 bulletsMoveAction();
                 // 飞机移动
                 aircraftsMoveAction();
+                // 敌机逃离惩罚
+                checkEscapedEnemies();
                 // 道具移动
                 propMoveAction();
                 // 撞击检测
@@ -458,6 +464,36 @@ public abstract class AbstractGame extends JPanel {
     protected void aircraftsMoveAction() {
         for (AbstractAircraft enemyAircraft : enemyAircrafts) {
             enemyAircraft.forward();
+        }
+    }
+
+    /**
+     * 检测并惩罚逃离出屏的敌机：扣血 + 扣分，然后立即移除（避免重复惩罚）
+     */
+    private void checkEscapedEnemies() {
+        java.util.Iterator<AbstractAircraft> it = enemyAircrafts.iterator();
+        while (it.hasNext()) {
+            AbstractAircraft enemy = it.next();
+            if (enemy.getLocationY() >= Main.WINDOW_HEIGHT && enemy.notValid()) {
+                int hpPenalty = 10;
+                int scorePenalty = 5;
+                if (enemy instanceof EliteEnemy) {
+                    hpPenalty = 20;
+                    scorePenalty = 10;
+                } else if (enemy instanceof VeteranEnemy) {
+                    hpPenalty = 30;
+                    scorePenalty = 15;
+                } else if (enemy instanceof AceEnemy) {
+                    hpPenalty = 40;
+                    scorePenalty = 20;
+                }
+                for (HeroAircraft hero : heroes) {
+                    hero.decreaseHp(hpPenalty);
+                }
+                score = Math.max(0, score - scorePenalty);
+                System.out.println(enemy.getClass().getSimpleName() + "逃离！扣血" + hpPenalty + "点，扣分" + scorePenalty + "分");
+                it.remove();
+            }
         }
     }
 

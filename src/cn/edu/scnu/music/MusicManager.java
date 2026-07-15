@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -21,7 +19,7 @@ public class MusicManager {
 
     private MusicManager() {
         initAudioPaths();
-        preloadedAllSoundClips();
+        preloadAllClips();
     }
 
     public static MusicManager getInstance() {
@@ -35,14 +33,11 @@ public class MusicManager {
         return instance;
     }
 
-    // 音乐名字 和 音频文件路径 的对应哈希表
     private final Map<MusicType, String> audioPaths = new HashMap<>();
-    // 音乐名字 和 音频线程 的对应哈希表 而且是正在播放的音乐
-    private final Map<MusicType, MusicThread> activeBgmThreads = new ConcurrentHashMap<>();
-    // 音乐名字 和 音频播放器 的对应哈希表 而且是短音效
-    private final Map<MusicType, Clip> preloadedSoundClips = new ConcurrentHashMap<>();
-    // 用于短音效的线程池 最多可以同时播放4种短音效
-    private final ExecutorService soundEffectExecutor = Executors.newFixedThreadPool(4);
+    // 所有音频（BGM + 音效）统一用 Clip 预加载
+    private final Map<MusicType, Clip> clips = new ConcurrentHashMap<>();
+    // 当前正在播放的 BGM
+    private MusicType currentBgm = null;
 
     public enum MusicType {
         BGM,
@@ -62,89 +57,105 @@ public class MusicManager {
         audioPaths.put(MusicType.GET_SUPPLY, "src/videos/get_supply.wav");
     }
 
-    private void preloadedAllSoundClips() {
+    private void preloadAllClips() {
+        // 同步预加载所有音频（启动时一次性加载，换取运行时流畅）
         for (MusicType key : audioPaths.keySet()) {
-            if (key.equals(MusicType.BGM) || key.equals(MusicType.BGM_BOSS)) {
-                continue;
-            }
-            preloadedSoundClip(key);
-        }
-    }
-
-    private void preloadedSoundClip(MusicType key) {
-        // 异步加载 提高效率 保障游戏启动流畅而不卡顿
-        soundEffectExecutor.submit(() -> {
             try {
                 AudioInputStream ais = AudioSystem.getAudioInputStream(new File(audioPaths.get(key)));
                 Clip clip = AudioSystem.getClip();
                 clip.open(ais);
                 ais.close();
 
-                // 设置音效音量
+                // 设置音量
                 if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                     FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                    if (key == MusicType.BOMB_EXPLOSION) {
+                    if (key == MusicType.BGM || key == MusicType.BGM_BOSS) {
+                        gainControl.setValue(6.0f);  // 背景音乐音量
+                    } else if (key == MusicType.BOMB_EXPLOSION) {
                         gainControl.setValue(-20.0f);
                     } else {
                         gainControl.setValue(-8.0f);
                     }
                 }
-                // clip先不用start
-                preloadedSoundClips.put(key, clip);
+                clips.put(key, clip);
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("预加载音频失败: " + key);
             }
-        });
-    }
-
-    public void playBgmMusic(MusicType key, boolean loop) {
-        stopBgmMusic(key);
-        MusicThread thread = new MusicThread(audioPaths.get(key), loop);
-        thread.start();
-        activeBgmThreads.put(key, thread);
-    }
-
-    public void stopBgmMusic(MusicType key) {
-        MusicThread bgm = activeBgmThreads.get(key);
-        if (bgm != null) {
-            bgm.stopPlayback();
-            activeBgmThreads.remove(key);
         }
     }
 
-    public void playEffectMusic(MusicType key) {
-        if (!preloadedSoundClips.containsKey(key)) {
+    /**
+     * 播放背景音乐（瞬间切换，零卡顿）
+     */
+    public void playBgmMusic(MusicType key, boolean loop) {
+        // 如果已经是这个 BGM 在播放，不做任何事
+        if (currentBgm == key && clips.containsKey(key) && clips.get(key).isRunning()) {
             return;
         }
+        // 停止当前 BGM
+        stopCurrentBgm();
 
-        soundEffectExecutor.submit(() -> {
-            Clip clip = preloadedSoundClips.get(key);
-            synchronized (clip) {
-                clip.setFramePosition(0);
-                clip.start();
-            }
-        });
-    }
+        Clip clip = clips.get(key);
+        if (clip == null) return;
 
-    // 停止所有音频
-    public void stopAllMusic() {
-        // 停止长音频线程
-        for (MusicThread t : activeBgmThreads.values())
-            t.stopPlayback();
-        activeBgmThreads.clear();
-        // 停止所有正在播放的音效Clip
-        for (Clip c : preloadedSoundClips.values()) {
-            c.stop();
-            c.setFramePosition(0);
+        clip.setFramePosition(0);
+        if (loop) {
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+        } else {
+            clip.start();
         }
-        // 注意：不要关闭线程池，除非游戏结束
+        currentBgm = key;
     }
 
-    // 游戏完全结束时调用
+    /**
+     * 停止指定 BGM
+     */
+    public void stopBgmMusic(MusicType key) {
+        if (currentBgm == key) {
+            stopCurrentBgm();
+        }
+    }
+
+    private void stopCurrentBgm() {
+        if (currentBgm != null) {
+            Clip clip = clips.get(currentBgm);
+            if (clip != null) {
+                clip.stop();
+                clip.setFramePosition(0);
+            }
+            currentBgm = null;
+        }
+    }
+
+    /**
+     * 播放短音效
+     */
+    public void playEffectMusic(MusicType key) {
+        Clip clip = clips.get(key);
+        if (clip == null) return;
+        // Clip 的 start 是非阻塞的，立即返回
+        clip.setFramePosition(0);
+        clip.start();
+    }
+
+    /**
+     * 停止所有音乐
+     */
+    public void stopAllMusic() {
+        stopCurrentBgm();
+        for (Clip clip : clips.values()) {
+            clip.stop();
+            clip.setFramePosition(0);
+        }
+    }
+
+    /**
+     * 游戏完全结束时调用
+     */
     public void shutdown() {
         stopAllMusic();
-        soundEffectExecutor.shutdownNow(); // 关闭线程池
-        for (Clip c : preloadedSoundClips.values())
-            c.close(); // 释放音频资源
+        for (Clip clip : clips.values()) {
+            clip.close();
+        }
     }
 }

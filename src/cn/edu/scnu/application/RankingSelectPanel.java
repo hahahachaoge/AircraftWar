@@ -6,6 +6,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * 排行榜难度选择页，布局与主菜单卡片完全一致
+ */
 public class RankingSelectPanel extends JPanel {
     private final CardLayout cardLayout;
     private final JPanel parent;
@@ -16,13 +19,19 @@ public class RankingSelectPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
 
-        // 标题
-        JLabel title = new JLabel("请选择要查看的难度", SwingConstants.CENTER);
-        title.setFont(new Font("微软雅黑", Font.BOLD, 40));
-        add(title, BorderLayout.NORTH);
+        // ========== 顶部：标题（完全对齐主页面标题位置） ==========
+        JPanel titlePanel = new JPanel(null);
+        titlePanel.setPreferredSize(new Dimension(1370, 60));
+        titlePanel.setBackground(Color.WHITE);
 
-        // 五个难度卡片
-        JPanel difficultyPanel = new JPanel(new GridLayout(1, 5, 20, 0));
+        JLabel title = new JLabel("请选择要查看的难度", SwingConstants.CENTER);
+        title.setFont(new Font("微软雅黑", Font.BOLD, 45));
+        title.setBounds(0, 10, 1370, 50);
+        titlePanel.add(title);
+        add(titlePanel, BorderLayout.NORTH);
+
+        // ========== 中央：五个难度图片 ==========
+        JPanel difficultyPanel = new JPanel(new GridLayout(1, 5, 10, 10));
         difficultyPanel.setBorder(BorderFactory.createEmptyBorder(30, 10, 30, 10));
         difficultyPanel.setBackground(Color.WHITE);
 
@@ -47,14 +56,19 @@ public class RankingSelectPanel extends JPanel {
         }
         add(difficultyPanel, BorderLayout.CENTER);
 
-        // 返回按钮（风格与主菜单按钮一致）
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        bottomPanel.setBackground(Color.WHITE);
+        // ========== 底部：返回按钮 ==========
+        JPanel functionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
+        functionPanel.setBackground(Color.WHITE);
         JButton backBtn = new JButton("返回主菜单");
         backBtn.setFont(new Font("微软雅黑", Font.BOLD, 18));
         backBtn.setPreferredSize(new Dimension(160, 50));
         backBtn.addActionListener(e -> cardLayout.show(parent, "main"));
-        bottomPanel.add(backBtn);
-        add(bottomPanel, BorderLayout.SOUTH);
+        functionPanel.add(backBtn);
+
+        JPanel southPanel = new JPanel(new BorderLayout());
+        southPanel.setBackground(Color.WHITE);
+        southPanel.add(functionPanel, BorderLayout.CENTER);
+        southPanel.add(new JPanel(), BorderLayout.SOUTH);
+        add(southPanel, BorderLayout.SOUTH);
     }
 }
