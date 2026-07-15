@@ -249,6 +249,13 @@ public abstract class AbstractGame extends JPanel {
      */
     private int shakeCounter = 0;
 
+    /** Boss 登场警告是否激活 */
+    protected boolean bossWarningActive = false;
+    /** Boss 警告倒计时（帧数） */
+    protected int bossWarningTimer = 0;
+    /** Boss 警告持续帧数（60帧 × 50ms = 3秒） */
+    protected static final int BOSS_WARNING_DELAY = 60;
+
     /**
      * 添加一个爆炸动画效果。
      *
@@ -476,8 +483,19 @@ public abstract class AbstractGame extends JPanel {
 
                 createRandomEnemy();
 
+                // Boss 警告 & 生成控制
                 if (shouldSpawnBoss()) {
-                    spawnBossEnemy();
+                    if (!bossWarningActive) {
+                        bossWarningActive = true;
+                        bossWarningTimer = 0;
+                    }
+                }
+                if (bossWarningActive) {
+                    bossWarningTimer++;
+                    if (bossWarningTimer >= BOSS_WARNING_DELAY) {
+                        spawnBossEnemy();
+                        bossWarningActive = false;
+                    }
                 }
 
                 // 飞机发射子弹
@@ -1040,6 +1058,28 @@ public abstract class AbstractGame extends JPanel {
 
         // 绘制得分和生命值
         paintScoreAndLife(shakeG);
+
+        // 绘制 BOSS 警告（暂停菜单之前）
+        if (bossWarningActive) {
+            String warningText = "WARNING !!";
+            shakeG.setFont(new Font("SansSerif", Font.BOLD, 60));
+            FontMetrics fm = shakeG.getFontMetrics();
+            int x = (Main.WINDOW_WIDTH - fm.stringWidth(warningText)) / 2;
+            int y = Main.WINDOW_HEIGHT / 2 - 30;
+            if (gameTime % 20 < 10) {
+                shakeG.setColor(Color.RED);
+            } else {
+                shakeG.setColor(Color.ORANGE);
+            }
+            shakeG.drawString(warningText, x, y);
+            int remain = (BOSS_WARNING_DELAY - bossWarningTimer) * 50 / 1000;
+            String countDown = String.valueOf(remain + 1);
+            shakeG.setFont(new Font("SansSerif", Font.BOLD, 40));
+            shakeG.setColor(Color.WHITE);
+            fm = shakeG.getFontMetrics();
+            x = (Main.WINDOW_WIDTH - fm.stringWidth(countDown)) / 2;
+            shakeG.drawString(countDown, x, y + 70);
+        }
 
         // 暂停时绘制半透明遮罩和菜单
         if (paused && !gameOverFlag) {
