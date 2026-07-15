@@ -31,12 +31,10 @@ public class HeroController {
                     return;
                 }
                 super.mouseDragged(e);
-                int x = e.getX();
-                int y = e.getY();
-                if (x < 0 || x > Main.WINDOW_WIDTH || y < 0 || y > Main.WINDOW_HEIGHT) {
-                    // 防止超出边界
-                    return;
-                }
+                int halfW = heroAircraft.getWidth() / 2;
+                int halfH = heroAircraft.getHeight() / 2;
+                int x = Math.max(halfW, Math.min(Main.WINDOW_WIDTH - halfW, e.getX()));
+                int y = Math.max(halfH, Math.min(Main.WINDOW_HEIGHT - halfH, e.getY()));
                 heroAircraft.setLocation(x, y);
             }
         };
